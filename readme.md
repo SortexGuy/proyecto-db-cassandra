@@ -40,9 +40,11 @@ Si se han creado nodos adicionales a los 2 disponibles en el makefile se deben d
 2. `make set-cassandra` para crear la red.
 3. `make run-cassandra` para iniciar el nodo principal de Cassandra en un contenedor.
 4. `make inspect-ip` para obtener la dirección ip del contenedor que puede no ser la misma para cada uno.
-5. Una vez obtenida la dirección ip podemos insertar este valor en el archivo *.env* con la llave `CASSANDRA_IPADDRESS`.
+5. Una vez obtenida la dirección ip podemos insertar este valor en el archivo **.env** con la llave `CASSANDRA_IPADDRESS`.
 6. Por ultimo podemos ejecutar `make` o `make run` para ejecutar el código escrito en _Go_.
 Si los pasos se han seguido correctamente el programa debería ejecutarse sin problema.
+Es posible que las primeras al correr este comando de algún error inmediatamente después de crear el contenedor de Cassandra,
+para evitar esto es mejor esperar 5 o 10 minutos antes de ejecutar este comando.
 
 
 [articulo-wsl]: https://dev.to/julianlasso/how-to-install-docker-cli-on-windows-without-docker-desktop-and-not-die-trying-4033
