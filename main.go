@@ -8,21 +8,19 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func LoadEnv() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Print("Please create a .env file in the root directory of the project")
-	}
-}
-
 func getClusterConfig() *gocql.ClusterConfig {
 	cass_ip := os.Getenv("CASSANDRA_IPADDRESS")
+	log.Print("Trying to connect to container at ", cass_ip)
 	cluster := gocql.NewCluster(cass_ip)
 	cluster.Consistency = gocql.Quorum
 	return cluster
 }
 
 func main() {
-	LoadEnv()
+	if err := godotenv.Load(".env"); err != nil {
+		log.Print("Please create a .env file in the root directory of the project")
+	}
+
 	cluster := getClusterConfig()
 
 	session, err := cluster.CreateSession()

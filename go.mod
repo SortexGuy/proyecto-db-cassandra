@@ -2,7 +2,10 @@ module github.com/SortexGuy/cassandra-try
 
 go 1.23.2
 
-require github.com/gocql/gocql v1.7.0
+require (
+	github.com/gocql/gocql v1.7.0
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	github.com/golang/snappy v0.0.3 // indirect
