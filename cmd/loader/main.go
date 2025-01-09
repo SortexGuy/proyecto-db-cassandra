@@ -31,6 +31,22 @@ type CsvLine struct {
 	Gross         string
 }
 
+type UserCsv struct {
+	User_ID  int
+	Name     string
+	Email    string
+	Password string
+}
+
+type MovieByUserCsv struct {
+	User_ID      int
+	Movie_ID     int
+	Username     string
+	Movie_Title  string
+	Director     string
+	Release_Date int
+}
+
 var SESSION *gocql.Session
 
 func getClusterConfig() *gocql.ClusterConfig {
@@ -88,6 +104,34 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// Crear tabla de usuarios
+	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.users (
+		user_id int,
+		name text,
+		email text,
+		password text,
+		PRIMARY KEY( user_id )
+	);`)
+	err = result.Exec()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Crear tabla de peliculas por usuario
+	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies_by_user (
+				user_id int,
+				movie_id int,
+				username text,
+				movie_title text,
+				director text,
+				release_date int,
+				PRIMARY KEY( user_id,movie_id )
+			);`)
+	err = result.Exec()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	// result = SESSION.Query(`CREATE INDEX movie_id ON app.movies(movie_id);`)
 	// err = result.Exec()
 	// if err != nil {
@@ -98,6 +142,17 @@ func main() {
 
 	err = readFromCSVFile("./data/movies_copy.csv")
 	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = ReadUsersCSV("./data/usuarios.csv")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = readUsersMovies("./data/peliculas_vistas.csv")
+	if err != nil {
+
 		log.Fatalln(err)
 	}
 
@@ -131,6 +186,64 @@ func readFromCSVFile(filepath string) (err error) {
 		count += 1
 	}
 	log.Println("Records processed: ", count)
+
+	return nil
+}
+
+// Función para leer el archivo CSV de usuarios
+func ReadUsersCSV(filepath string) (err error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	log.Println("Users file opened")
+
+	reader := csv.NewReader(file)
+	count := -1
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalln(err)
+			continue
+		}
+
+		ProcessUss(record) // Procesar el registro de usuarios
+		count += 1
+	}
+	log.Println("Users records processed: ", count)
+
+	return nil
+}
+
+// Función para leer el archivo CSV de usuarios
+func readUsersMovies(filepath string) (err error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	log.Println("Users movies file opened")
+
+	reader := csv.NewReader(file)
+	count := -1
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalln(err)
+			continue
+		}
+
+		ProcessUssMovies(record) // Procesar el registro de usuarios x pelicula 
+		count += 1
+	}
+	log.Println("Users movies records processed: ", count)
 
 	return nil
 }
@@ -189,6 +302,65 @@ func processRecord(line []string) {
 	insertIntoDb(buf)
 }
 
+// 2. Process the records in each line for users
+func ProcessUss(line []string) {
+	if len(line) < 4 {
+		log.Println("Invalid length, discarding line...")
+		return
+	}
+
+	if line[0] == "ID" {
+		// ignore first line
+		return
+	}
+
+	// note: error checking omitted for brevity
+	User_ID, _ := strconv.Atoi(line[0])
+	Name := line[1]
+	Email := line[2]
+	Password := line[3]
+
+	buff := UserCsv{
+		User_ID:  User_ID,
+		Name:     Name,
+		Email:    Email,
+		Password: Password,
+	}
+
+	insertIntoDbUss(buff)
+}
+
+func ProcessUssMovies(line []string) {
+	if len(line) < 6 {
+		log.Println("Invalid length, discarding line...")
+		return
+	}
+
+	if line[0] == "user_id" {
+		// ignore first line
+		return
+	}
+
+	// note: error checking omitted for brevity
+	User_ID, _ := strconv.Atoi(line[0])
+	Movie_ID, _ := strconv.Atoi(line[1])
+	Username := line[2]
+	Movie_Title := line[3]
+	Director := line[4]
+	Release_Date, _ := strconv.Atoi(line[5])
+
+	buff := MovieByUserCsv{
+		User_ID:      User_ID,
+		Movie_ID:     Movie_ID,
+		Username:     Username,
+		Movie_Title:  Movie_Title,
+		Director:     Director,
+		Release_Date: Release_Date,
+	}
+
+	insertIntoDbUssMovies(buff)
+}
+
 // 3. Insert the values into the database
 func insertIntoDb(record CsvLine) {
 	query_obj := SESSION.Query(`INSERT INTO app.movies
@@ -211,6 +383,42 @@ func insertIntoDb(record CsvLine) {
 		record.Star4,
 		record.No_of_Votes,
 		record.Gross,
+	)
+	err := query_obj.Exec()
+
+	if err != nil {
+		log.Printf("Insert failed: %s\n", err)
+		log.Println("Failed record: ", record)
+	}
+}
+
+func insertIntoDbUss(record UserCsv) {
+	query_obj := SESSION.Query(`INSERT INTO app.users
+	(user_id, name, Email, Password)
+	VALUES (?, ?, ?, ?)`,
+		record.User_ID,
+		record.Name,
+		record.Email,
+		record.Password,
+	)
+	err := query_obj.Exec()
+
+	if err != nil {
+		log.Printf("Insert failed: %s\n", err)
+		log.Println("Failed record: ", record)
+	}
+}
+
+func insertIntoDbUssMovies(record MovieByUserCsv) {
+	query_obj := SESSION.Query(`INSERT INTO app.movies_by_user
+	(user_id, movie_id, username, movie_title, director, release_date)
+	VALUES (?, ?, ?, ?, ?, ?)`,
+		record.User_ID,
+		record.Movie_ID,
+		record.Username,
+		record.Movie_Title,
+		record.Director,
+		record.Release_Date,
 	)
 	err := query_obj.Exec()
 
