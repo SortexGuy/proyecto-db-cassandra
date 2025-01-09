@@ -1,6 +1,9 @@
 run:
 	go run .
 
+load-data:
+	go run ./cmd/loader
+
 get-cassandra:
 	docker pull cassandra
 
