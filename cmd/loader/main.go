@@ -88,6 +88,29 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// Crear tabla de usuarios
+	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.users (
+		user_id UUID PRIMARY KEY,
+		name text,
+		email text
+	);`)
+	err = result.Exec()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Crear tabla de peliculas por usuario
+	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies_by_user (
+				user_id UUID PRIMARY KEY,
+				movie_title text,
+				director text,
+				release_date int
+			);`)
+	err = result.Exec()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	// result = SESSION.Query(`CREATE INDEX movie_id ON app.movies(movie_id);`)
 	// err = result.Exec()
 	// if err != nil {
