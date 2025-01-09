@@ -1,4 +1,4 @@
-module github.com/SortexGuy/cassandra-try
+module github.com/SortexGuy/proyecto-db-cassandra
 
 go 1.23.2
 
