@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
 )
@@ -25,17 +27,22 @@ func main() {
 	}
 
 	cluster := getClusterConfig()
-
 	log.Println("Trying to open Cassandra session")
 	session, err := cluster.CreateSession()
 	if err != nil {
 		log.Fatal("Unable to open up a session with the Cassandra database!", err)
 	}
 	SESSION = session
+	defer SESSION.Close()
 
 	// TODO: Execute code
+	r := gin.Default()
 
-	log.Println("All good")
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
 
-	defer SESSION.Close()
+	r.Run()
 }
