@@ -24,7 +24,7 @@ type MovieRepository struct {
 // NewMovieRepository crea una nueva instancia de MovieRepository
 func NewMovieRepository(session *gocql.Session) *MovieRepository {
 	return &MovieRepository{session: session}
-}
+} 
 
 // GetAllMovies obtiene todas las películas de la base de datos
 func (repo *MovieRepository) GetAllMovies() ([]Movie, error) {

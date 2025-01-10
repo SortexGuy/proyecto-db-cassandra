@@ -23,7 +23,7 @@ func getMovieController(c *gin.Context) {
 		return
 	}
 
-	data := []MovieDTO{movie}
+	data := []MovieDTOS{movie}
 	c.JSON(http.StatusOK, gin.H{
 		"data": data,
 	})
