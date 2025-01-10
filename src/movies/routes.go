@@ -7,5 +7,5 @@ import (
 func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/movies")
 
-	group.GET("/", getMovieController)
+	group.GET("/", getMoviesController)
 }
