@@ -1,7 +1,7 @@
 package movies
 
-func GetMovieByIDService(id int) (MovieDTO, error) {
-	movie, err := findMovieByIDRepo(id)
+func GetMovieByIDService(id int) (MovieDTOS, error) {
+	movie, err := FindMovieByIDRepo(id)
 
 	return movie, err
 }

@@ -1,15 +1,13 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
-	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
+	"log"
+	"net/http"
+	"os"
 )
 
 var SESSION *gocql.Session
@@ -37,6 +35,18 @@ func main() {
 	SESSION = session
 	defer SESSION.Close()
 
+	// Inicializa la variable global movieRepo
+	movies.MovieRepo = movies.NewMovieRepositorys(session)
+
+	// Llama a findMovieByIDRepo
+	movieID := 1                                    // Cambia esto al ID de la película que deseas buscar
+	movie, err := movies.FindMovieByIDRepo(movieID) // Llama a la función sin cambiar los parámetros
+	if err != nil {
+		log.Println("Error finding movie:", err)
+	} else {
+		log.Println("Found movie:", movie)
+	}
+
 	// TODO: Execute code
 	r := gin.Default()
 
@@ -45,8 +55,8 @@ func main() {
 			"message": "pong",
 		})
 	})
-	movies.RegisterRoutes(r)
-	users.RegisterRoutes(r)
+	//movies.RegisterRoutes(r)
+	//users.RegisterRoutes(r)
 
 	r.Run()
 }
