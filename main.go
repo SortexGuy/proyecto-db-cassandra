@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
@@ -43,6 +45,8 @@ func main() {
 			"message": "pong",
 		})
 	})
+	movies.RegisterRoutes(r)
+	users.RegisterRoutes(r)
 
 	r.Run()
 }
