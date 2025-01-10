@@ -15,7 +15,7 @@ func getUsersController(c *gin.Context) {
 		return
 	}
 
-	user, err := GetUserByID(userID.(int))
+	user, err := GetUserByIDService(userID.(int))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "error getting user",
