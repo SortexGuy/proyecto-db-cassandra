@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
-	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
+	"log"
+	//"net/http"
+	"os"
 )
 
 var SESSION *gocql.Session
@@ -37,16 +38,31 @@ func main() {
 	SESSION = session
 	defer SESSION.Close()
 
-	// TODO: Execute code
-	r := gin.Default()
+	// Inicializa los repositorios
+	movieRepo := movies.NewMovieRepository(session)
+	movieByUserRepo := movies.NewMovieByUserRepository(session)
+
+	// Inicializa el controlador
+	movieController := movies.NewMovieController(movieRepo, movieByUserRepo)
+
+	// Probar GetMoviesByUser
+	userID := int64(6) // Cambia esto al ID de usuario que deseas probar
+	moviesByUser, err := movieController.GetMoviesByUser(userID)
+	if err != nil {
+		log.Println("Error:", err)
+	} else {
+		log.Printf("Movies by user %d: %+v\n", userID, moviesByUser)
+	}
+}
+
+// TODO: Execute code
+//r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
-	movies.RegisterRoutes(r)
-	users.RegisterRoutes(r)
 
-	r.Run()
-}
+//r.Run()
+//}
