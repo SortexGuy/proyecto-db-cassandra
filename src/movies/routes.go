@@ -7,11 +7,11 @@ import (
 )
 
 // RegisterRoutes registra las rutas para el grupo de películas
-func RegisterRoutes(router *gin.Engine, movieController *MovieController) {
+func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/movies")
 
 	group.GET("/", func(c *gin.Context) {
-		movies, err := movieController.GetMovies()
+		movies, err := getAllMoviesController()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch movies"})
 			return
@@ -19,3 +19,4 @@ func RegisterRoutes(router *gin.Engine, movieController *MovieController) {
 		c.JSON(http.StatusOK, movies)
 	})
 }
+
