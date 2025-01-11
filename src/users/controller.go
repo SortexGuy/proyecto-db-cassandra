@@ -1,17 +1,35 @@
 package users
 
 import (
+	"log"
 	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
 func getUsersController(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
+	userIDText := c.Query("user_id")
+	userID, err := strconv.ParseInt(userIDText, 10, 64)
+	if userIDText == "" || err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "user_id not found",
+			"message": "movie_id not found",
 		})
 		return
 	}
 
+	user, err := getUserByIDService(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error getting user",
+		})
+		return
+	}
+
+	data := []UserDTO{user}
+	c.JSON(http.StatusOK, gin.H{
+		"data": data,
+	})
 }
+

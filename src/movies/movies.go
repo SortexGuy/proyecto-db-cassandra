@@ -1,12 +1,7 @@
 package movies
 
-import(
-
-	"github.com/gocql/gocql"
-)
-
 type MovieDTO struct {
-	Movie_ID      int     `json:"movie_id"`
+	ID            int64   `json:"id"`
 	Poster_Link   string  `json:"poster_link"`
 	Series_Title  string  `json:"series_title"`
 	Released_Year int     `json:"released_year"`
@@ -25,23 +20,18 @@ type MovieDTO struct {
 	Gross         string  `json:"gross"`
 }
 
-// MovieRepository es la estructura que maneja la sesión de Cassandra
-type MovieRepository struct {
-	session *gocql.Session
-}
-
 // Movie representa la estructura de una película
 type Movie struct {
-	ID    int64  `json:"id"`
-}
-
-// MovieByUser Repository es la estructura que maneja la sesión de Cassandra para movies_by_user
-type MovieByUserRepository struct {
-    session *gocql.Session
+	ID int64 `json:"id"`
 }
 
 // MovieByUser  representa la relación entre una película y un usuario
-type MovieByUser  struct {
+type MovieByUser struct {
 	UserID  int64 `json:"user_id"`
-    MovieID int64 `json:"movie_id"`
+	MovieID int64 `json:"movie_id"`
+}
+
+// Movie representa la estructura de una película
+type MovieIDOnly struct {
+	ID int64 `json:"id"`
 }

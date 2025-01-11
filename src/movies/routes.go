@@ -10,6 +10,7 @@ import (
 func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/movies")
 
+	group.GET("/", getMovieByIDController)
 	group.GET("/", func(c *gin.Context) {
 		movies, err := GetMovieController()
 		if err != nil {

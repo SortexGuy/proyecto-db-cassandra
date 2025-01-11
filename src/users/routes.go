@@ -7,5 +7,5 @@ import (
 func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/users")
 
-	group.GET("/", getUsersController)
+	group.GET("/", getUserByIDController)
 }
