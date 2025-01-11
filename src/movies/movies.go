@@ -19,3 +19,14 @@ type MovieDTO struct {
 	No_of_Votes   int     `json:"no_of_votes"`
 	Gross         string  `json:"gross"`
 }
+
+// Movie representa la estructura de una película
+type Movie struct {
+	ID    int64  `json:"id"`
+}
+
+// MovieByUser  representa la relación entre una película y un usuario
+type MovieByUser  struct {
+	UserID  int64 `json:"user_id"`
+    MovieID int64 `json:"movie_id"`
+}

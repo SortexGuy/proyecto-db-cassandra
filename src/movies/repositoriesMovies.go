@@ -5,16 +5,6 @@ import (
 	"log"
 )
 
-// Movie representa la estructura de una película
-type Movie struct {
-	ID    int64  `json:"id"`
-}
-
-// MovieByUser  representa la relación entre una película y un usuario
-type MovieByUser  struct {
-	UserID  int64 `json:"user_id"`
-    MovieID int64 `json:"movie_id"`
-}
 
 // MovieRepository es la estructura que maneja la sesión de Cassandra
 type MovieRepository struct {
@@ -59,7 +49,7 @@ func NewMovieByUserRepository(session *gocql.Session) *MovieByUserRepository {
 
 // GetAllMoviesByUser  obtiene todas las películas de un usuario específico
 func (repo *MovieByUserRepository) GetAllMoviesByUser (userID int64) ([]MovieByUser , error) {
-    var moviesByUser  []MovieByUser 
+    var moviesByUser  []MovieByUser  
     query := "SELECT movie_id, user_id FROM movies_by_user WHERE user_id = ?"
 
     // Ejecuta la consulta con el userID
