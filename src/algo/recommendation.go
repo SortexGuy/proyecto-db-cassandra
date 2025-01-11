@@ -1,8 +1,8 @@
-package algo
+package main
 
 import (
+	"container/heap"
 	"fmt"
-	"sort"
 
 	"gonum.org/v1/gonum/graph/simple"
 )
@@ -15,208 +15,6 @@ type Node struct {
 // Método ID para cumplir con graph.Node
 func (n Node) ID() int64 {
 	return n.id
-}
-
-type Item struct {
-	ID    int64
-	Score float64
-}
-
-func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps int, lambda float64) []Item {
-	// Obtener los resultados de las dos estrategias
-	heat, max_heat := heatPropagation(g, initialUserID, steps)
-	resources, max_resources := resourceAllocation(g, initialUserID, steps)
-
-	// Normalizar ambos resultados y combinar
-	hybridScores := make(map[int64]float64)
-	nodes := g.Nodes()
-	for nodes.Next() {
-		node := nodes.Node()
-		if node.ID() >= 0 { // Solo considerar objetos (IDs positivos)
-			heatValue, heatExists := heat[node.ID()]
-			if heatExists && !heatValue.previousInteraction && heatValue.value != 0 {
-				hybridScores[node.ID()] = lambda * (heatValue.value / max_heat)
-			}
-			resourceValue, resourceExists := resources[node.ID()]
-			if resourceExists && !resourceValue.previousInteraction && resourceValue.value != 0 {
-				hybridScores[node.ID()] += (1 - lambda) * (resourceValue.value / max_resources)
-			}
-		}
-
-	}
-	return sortMapDescending(hybridScores)
-}
-
-type ResourceInfo struct {
-	value               float64
-	previousInteraction bool
-}
-
-func heatPropagation(g *simple.UndirectedGraph, initialUserID int64, steps int) (map[int64]*ResourceInfo, float64) {
-	// Inicializar recursos en los objetos conectados al usuario inicial
-	heat := initializeMap(g, initialUserID)
-	degrees := calculateDegrees(g)
-	max := 0.0
-	// Propagación del calor por los pasos indicados
-	for step := 0; step < steps; step++ {
-		// Paso 1: Pelicula → Usuario
-		userHeat := make(map[int64]*ResourceInfo)
-		nodes := g.Nodes()
-		for nodes.Next() {
-			node := nodes.Node()
-			if node.ID() < 0 { // Usuarios (IDs negativos)
-				sum := 0.0
-				movies := g.From(node.ID())
-				for movies.Next() {
-					movie := movies.Node()
-					sum += heat[movie.ID()].value / float64(degrees[node.ID()])
-				}
-				userHeat[node.ID()] = &ResourceInfo{
-					value:               sum,
-					previousInteraction: false,
-				}
-			}
-		}
-
-		// Paso 2: Usuario → Pelicula
-		newHeat := make(map[int64]*ResourceInfo)
-		nodes = g.Nodes()
-		for nodes.Next() {
-			node := nodes.Node()
-			if node.ID() >= 0 { // Peliculas (IDs positivos)
-				sum := 0.0
-				users := g.From(node.ID())
-				for users.Next() {
-					user := users.Node()
-					sum += userHeat[user.ID()].value / float64(degrees[node.ID()])
-				}
-				newHeat[node.ID()] = &ResourceInfo{
-					value:               sum,
-					previousInteraction: heat[node.ID()].previousInteraction,
-				}
-				if step == steps-1 && sum > max {
-					max = sum
-				}
-			} else {
-				newHeat[node.ID()] = &ResourceInfo{
-					value:               0.0,
-					previousInteraction: false,
-				}
-			}
-		}
-
-		heat = newHeat
-	}
-
-	return heat, max
-}
-
-func initializeMap(g *simple.UndirectedGraph, initialUserID int64) map[int64]*ResourceInfo {
-	temp := make(map[int64]*ResourceInfo)
-
-	nodes := g.Nodes()
-	for nodes.Next() {
-		nodeID := nodes.Node().ID()
-		temp[nodeID] = &ResourceInfo{value: 0, previousInteraction: false}
-
-		// Verificar la vecindad dentro del mismo bucle
-		if g.HasEdgeBetween(nodeID, initialUserID) {
-			temp[nodeID].value = 1
-			temp[nodeID].previousInteraction = true
-		}
-	}
-
-	return temp
-}
-
-func calculateDegrees(g *simple.UndirectedGraph) map[int64]int {
-	degrees := make(map[int64]int)
-	nodes := g.Nodes()
-	for nodes.Next() {
-		node := nodes.Node()
-
-		// Contar el número de nodos conectados
-		count := 0
-		connections := g.From(node.ID())
-		for connections.Next() {
-			count++
-		}
-
-		degrees[node.ID()] = count
-	}
-	return degrees
-}
-
-func resourceAllocation(g *simple.UndirectedGraph, initialUserID int64, steps int) (map[int64]*ResourceInfo, float64) {
-	// Inicializar recursos en los objetos conectados al usuario inicial
-	resources := initializeMap(g, initialUserID)
-	degrees := calculateDegrees(g)
-	max := 0.0
-	// Propagación de recursos por los pasos indicados
-	for step := 0; step < steps; step++ {
-		// Paso 1: Distribuir recursos de peliculas a usuarios
-		userResources := make(map[int64]*ResourceInfo)
-		nodes := g.Nodes()
-		for nodes.Next() {
-			node := nodes.Node()
-			if node.ID() < 0 { // ID negativo para usuarios
-				sum := 0.0
-				movies := g.From(node.ID())
-				for movies.Next() {
-					movie := movies.Node()
-					sum += resources[movie.ID()].value / float64(degrees[movie.ID()])
-				}
-				userResources[node.ID()] = &ResourceInfo{
-					value:               sum,
-					previousInteraction: false,
-				}
-			}
-		}
-
-		// Paso 2: Distribuir recursos de usuarios a objetos
-		newResources := make(map[int64]*ResourceInfo)
-		nodes = g.Nodes()
-		for nodes.Next() {
-			node := nodes.Node()
-			if node.ID() >= 0 { // ID positivo para objetos
-				sum := 0.0
-				users := g.From(node.ID())
-				for users.Next() {
-					user := users.Node()
-					sum += userResources[user.ID()].value / float64(degrees[user.ID()])
-				}
-				newResources[node.ID()] = &ResourceInfo{
-					value:               sum,
-					previousInteraction: resources[node.ID()].previousInteraction,
-				}
-				if step == steps-1 && sum > max {
-					max = sum
-				}
-			} else {
-				newResources[node.ID()] = &ResourceInfo{
-					value:               0.0,
-					previousInteraction: false,
-				}
-			}
-		}
-
-		resources = newResources
-	}
-
-	return resources, max
-}
-
-func sortMapDescending(hybridScores map[int64]float64) []Item {
-	items := make([]Item, 0, len(hybridScores))
-	for id, score := range hybridScores {
-		items = append(items, Item{ID: id, Score: score})
-	}
-
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].Score > items[j].Score // Orden descendente
-	})
-
-	return items
 }
 
 type UserMovie struct {
@@ -264,18 +62,228 @@ func createGraph(users []int64, movies []int64, relations []UserMovie) *simple.U
 	return g
 }
 
-/*func test() {
+type Item struct {
+	ID    int64
+	Score float64
+}
 
-	g := createGraph(users, movies, relations)
-
-	resources := HybridRecommendation(g, -1, 1, 0.5)
-
-	// Imprimir resultados
-	fmt.Println("Distribución de recursos:")
-
-	for _, item := range resources {
-		fmt.Printf("ID: %d, Score: %.7f\n", item.ID, item.Score)
+func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps int, lambda float64, num_recommendations int) []int64 {
+	resources, maxResources, heat, maxHeat := propagate(g, initialUserID, steps)
+	// Normalizar ambos resultados y combinar
+	hybridScores := make(map[int64]float64)
+	nodes := g.Nodes()
+	for nodes.Next() {
+		node := nodes.Node()
+		if node.ID() >= 0 { // Solo considerar objetos (IDs positivos)
+			heatValue, heatExists := heat[node.ID()]
+			if heatExists && !heatValue.previousInteraction && heatValue.value != 0 {
+				hybridScores[node.ID()] = lambda * (heatValue.value / maxHeat)
+			}
+			resourceValue, resourceExists := resources[node.ID()]
+			if resourceExists && !resourceValue.previousInteraction && resourceValue.value != 0 {
+				hybridScores[node.ID()] += (1 - lambda) * (resourceValue.value / maxResources)
+			}
+		}
 
 	}
+	return sortMapDescending(hybridScores, 5)
+}
 
-}*/
+type ResourceInfo struct {
+	value               float64
+	previousInteraction bool
+}
+
+func propagate(g *simple.UndirectedGraph, initialUserID int64, steps int) (map[int64]*ResourceInfo, float64, map[int64]*ResourceInfo, float64) {
+	// Inicializar recursos en los objetos conectados al usuario inicial
+	resources := initializeMap(g, initialUserID)
+	heat := initializeMap(g, initialUserID)
+	degrees := calculateDegrees(g)
+	inverseDegrees := calculateInverseDegree(degrees)
+	maxResources, maxHeat := 0.0, 0.0
+
+	userResources, userHeat := make(map[int64]*ResourceInfo), make(map[int64]*ResourceInfo)
+	newResources, newHeat := make(map[int64]*ResourceInfo), make(map[int64]*ResourceInfo)
+
+	for step := 0; step < steps; step++ {
+		// Paso 1: Distribuir recursos de peliculas a usuarios
+		nodes := g.Nodes()
+		for nodes.Next() {
+			nodeID := nodes.Node().ID()
+			if nodeID < 0 { // ID negativo para usuarios
+				sumResources, sumHeat := 0.0, 0.0
+				movies := g.From(nodeID)
+				for movies.Next() {
+					movieID := movies.Node().ID()
+					sumResources += resources[movieID].value * inverseDegrees[movieID]
+					sumHeat += heat[movieID].value * inverseDegrees[nodeID]
+				}
+
+				userResources[nodeID] = &ResourceInfo{
+					value:               sumResources,
+					previousInteraction: false,
+				}
+				userHeat[nodeID] = &ResourceInfo{
+					value:               sumHeat,
+					previousInteraction: false,
+				}
+
+			}
+		}
+
+		// Paso 2: Distribuir recursos de usuarios a objetos
+		nodes = g.Nodes()
+		for nodes.Next() {
+			nodeID := nodes.Node().ID()
+			if nodeID >= 0 { // ID positivo para objetos
+				sumResources, sumHeat := 0.0, 0.0
+				users := g.From(nodeID)
+				for users.Next() {
+					userID := users.Node().ID()
+					sumResources += userResources[userID].value * inverseDegrees[userID]
+					sumHeat += userHeat[userID].value * inverseDegrees[nodeID]
+				}
+				newResources[nodeID] = &ResourceInfo{
+					value:               sumResources,
+					previousInteraction: resources[nodeID].previousInteraction,
+				}
+				newHeat[nodeID] = &ResourceInfo{
+					value:               sumHeat,
+					previousInteraction: heat[nodeID].previousInteraction,
+				}
+
+				if step == steps-1 {
+					if sumResources > maxResources {
+						maxResources = sumResources
+					}
+					if sumHeat > maxHeat {
+						maxHeat = sumHeat
+					}
+				}
+
+			} else {
+				newResources[nodeID] = &ResourceInfo{
+					value:               0.0,
+					previousInteraction: false,
+				}
+				newHeat[nodeID] = &ResourceInfo{
+					value:               0.0,
+					previousInteraction: false,
+				}
+			}
+		}
+
+		resources = newResources
+		heat = newHeat
+
+		for k := range userResources {
+			delete(userResources, k)
+			delete(userHeat, k)
+			delete(newResources, k)
+			delete(newHeat, k)
+		}
+	}
+
+	return resources, maxResources, heat, maxHeat
+}
+func initializeMap(g *simple.UndirectedGraph, initialUserID int64) map[int64]*ResourceInfo {
+	temp := make(map[int64]*ResourceInfo)
+
+	nodes := g.Nodes()
+	for nodes.Next() {
+		nodeID := nodes.Node().ID()
+		temp[nodeID] = &ResourceInfo{value: 0, previousInteraction: false}
+
+		// Verificar la vecindad dentro del mismo bucle
+		if g.HasEdgeBetween(nodeID, initialUserID) {
+			temp[nodeID].value = 1
+			temp[nodeID].previousInteraction = true
+		}
+	}
+
+	return temp
+}
+
+// Función para calcular el grado de cada nodo en el grafo
+func calculateDegrees(g *simple.UndirectedGraph) map[int64]int {
+	degrees := make(map[int64]int)
+	nodes := g.Nodes()
+	for nodes.Next() {
+		node := nodes.Node()
+
+		// Contar el número de nodos conectados
+		count := 0
+		connections := g.From(node.ID())
+		for connections.Next() {
+			count++
+		}
+
+		degrees[node.ID()] = count
+	}
+	return degrees
+}
+
+func calculateInverseDegree(degrees map[int64]int) map[int64]float64 {
+	inverseDegrees := make(map[int64]float64)
+	for nodeID, degree := range degrees {
+		if degree > 0 { // Evitar división por cero
+			inverseDegrees[nodeID] = 1.0 / float64(degree)
+		} else {
+			inverseDegrees[nodeID] = 0.0
+		}
+	}
+	return inverseDegrees
+}
+
+type ItemHeap []Item
+
+func (h ItemHeap) Len() int           { return len(h) }
+func (h ItemHeap) Less(i, j int) bool { return h[i].Score < h[j].Score }
+func (h ItemHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *ItemHeap) Push(x interface{}) {
+	*h = append(*h, x.(Item))
+}
+
+func (h *ItemHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
+
+func sortMapDescending(hybridScores map[int64]float64, numRecommendations int) []int64 {
+	// Usar un min-heap para mantener solo los numRecommendations mayores
+	h := &ItemHeap{}
+	heap.Init(h)
+
+	for id, score := range hybridScores {
+		if h.Len() < numRecommendations {
+			heap.Push(h, Item{ID: id, Score: score})
+		} else if score > (*h)[0].Score {
+			heap.Pop(h)
+			heap.Push(h, Item{ID: id, Score: score})
+		}
+	}
+
+	result := make([]int64, numRecommendations)
+	for i := numRecommendations - 1; i >= 0; i-- {
+		result[i] = (heap.Pop(h).(Item)).ID
+	}
+
+	return result
+}
+
+func example() {
+
+	g := createGraph(users, movies, relations)
+	resources := HybridRecommendation(g, -1, 1, 0.5, 10)
+
+	fmt.Printf("Imprimir resultados\n")
+
+	for _, item := range resources {
+		fmt.Printf("ID: %d\n", item)
+	}
+
+}
