@@ -5,3 +5,8 @@ func GetMovieByIDService(id int) (MovieDTOS, error) {
 
 	return movie, err
 }
+
+func getAllMoviesService() ([]Movie, error) {
+	movies, err := getAllMoviesRepository()
+	return movies, err
+}
