@@ -3,19 +3,23 @@ package movies
 import (
 	"log"
 	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
 func getMovieController(c *gin.Context) {
-	movieID, exists := c.Get("movie_id")
-	if !exists {
+	movieIDText := c.Query("movie_id")
+	movieID, err := strconv.Atoi(movieIDText)
+	if movieIDText == "" || err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "movie_id not found",
 		})
 		return
 	}
 
-	movie, err := GetMovieByIDService(movieID.(int))
+	movie, err := GetMovieByIDService(movieID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "error getting movie",
