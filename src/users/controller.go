@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getUsersController(c *gin.Context) {
+func getUserByIDController(c *gin.Context) {
 	userIDText := c.Query("user_id")
 	userID, err := strconv.ParseInt(userIDText, 10, 64)
 	if userIDText == "" || err != nil {
@@ -32,4 +32,3 @@ func getUsersController(c *gin.Context) {
 		"data": data,
 	})
 }
-
