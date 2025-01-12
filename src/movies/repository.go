@@ -87,14 +87,14 @@ func getAllMoviesIDRepository() ([]int64, error) {
 
 func getMovieByIDRepository(movieID int64) (MovieDTO, error) {
 	session := config.SESSION
-	query := `SELECT * FROM app.movies WHERE movie_id = ?`
+	query := `SELECT * FROM movies WHERE movie_id = ?`
 	var movie MovieDTO
 
 	err := session.Query(query, movieID).Scan(
-		&movie.ID, &movie.Poster_Link, &movie.Series_Title, &movie.Released_Year,
-		&movie.Certificate, &movie.Runtime, &movie.Genre, &movie.IMDB_Rating,
-		&movie.Overview, &movie.Meta_score, &movie.Director, &movie.Star1,
-		&movie.Star2, &movie.Star3, &movie.Star4, &movie.No_Votes, &movie.Gross,
+		&movie.ID, &movie.Certificate, &movie.Director, &movie.Genre,
+		&movie.Gross, &movie.IMDB_Rating, &movie.Meta_score, &movie.No_Votes,
+		&movie.Overview, &movie.Poster_Link, &movie.Released_Year, &movie.Runtime,
+		&movie.Series_Title, &movie.Star1, &movie.Star2, &movie.Star3, &movie.Star4,
 	)
 
 	if err != nil {
@@ -108,7 +108,7 @@ func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 	session := config.SESSION
 	var moviesByUser []MovieByUser
 
-	query := "SELECT user_id, movie_id FROM app.movies_by_user"
+	query := "SELECT user_id, movie_id FROM movies_by_user"
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
@@ -130,7 +130,7 @@ func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 func getMoviesByUserRepository(userID int64) ([]MovieByUser, error) {
 	session := config.SESSION
 	var moviesByUser []MovieByUser
-	query := "SELECT user_id,movie_id, FROM app.movies_by_user WHERE user_id = ?"
+	query := "SELECT user_id, movie_id FROM movies_by_user WHERE user_id = ?"
 
 	// Ejecuta la consulta con el userID
 	iter := session.Query(query, userID).Iter()

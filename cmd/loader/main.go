@@ -7,7 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gocql/gocql"
+	"github.com/SortexGuy/proyecto-db-cassandra/config"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/counters"
 	"github.com/joho/godotenv"
 )
 
@@ -47,32 +48,22 @@ type MovieByUserCsv struct {
 	Release_Date int
 }
 
-var SESSION *gocql.Session
-
-func getClusterConfig() *gocql.ClusterConfig {
-	cass_ip := os.Getenv("CASSANDRA_IPADDRESS")
-	log.Println("Trying to connect to container at ", cass_ip)
-	cluster := gocql.NewCluster(cass_ip)
-	cluster.Consistency = gocql.Quorum
-	return cluster
-}
-
 func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("Please create a .env file in the root directory of the project")
 	}
 
-	cluster := getClusterConfig()
+	cluster := config.GetClusterConfig(true)
 
 	log.Println("Trying to open Cassandra session")
 	session, err := cluster.CreateSession()
 	if err != nil {
 		log.Fatal("Unable to open up a session with the Cassandra database!", err)
 	}
-	SESSION = session
+	config.SESSION = session
 
 	// Crear keyspace
-	result := SESSION.Query(`CREATE KEYSPACE IF NOT EXISTS app WITH REPLICATION = {
+	result := config.SESSION.Query(`CREATE KEYSPACE IF NOT EXISTS app WITH REPLICATION = {
 		'class' : 'SimpleStrategy',
 		'replication_factor' : '1'
 	};`)
@@ -82,8 +73,8 @@ func main() {
 	}
 
 	// Crear tabla de peliculas
-	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies(
-		movie_id int,
+	result = config.SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies(
+		movie_id bigint,
 		poster_link text,
 		series_title text,
 		released_year int,
@@ -108,8 +99,8 @@ func main() {
 	}
 
 	// Crear tabla de usuarios
-	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.users (
-		user_id int,
+	result = config.SESSION.Query(`CREATE TABLE IF NOT EXISTS app.users (
+		user_id bigint,
 		name text,
 		email text,
 		password text,
@@ -122,14 +113,24 @@ func main() {
 
 	// Crear tabla de peliculas por usuario
 	//los id deben ser bigint
-	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies_by_user (
-		user_id int,
-		movie_id int,
+	result = config.SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies_by_user (
+		user_id bigint,
+		movie_id bigint,
 		username text,
 		movie_title text,
 		director text,
 		release_date int,
 		PRIMARY KEY( user_id,movie_id )
+	);`)
+	err = result.Exec()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Crear tabla para contar los identificadores de varias tablas
+	result = config.SESSION.Query(`CREATE TABLE app.counters (
+		id_name text PRIMARY KEY,
+		current_id bigint
 	);`)
 	err = result.Exec()
 	if err != nil {
@@ -156,7 +157,7 @@ func main() {
 
 	log.Println("All good")
 
-	defer SESSION.Close()
+	defer config.SESSION.Close()
 }
 
 // 1. Read a CSV file line-by-line (from local file)
@@ -358,7 +359,8 @@ func processUserMoviesRecord(line []string) {
 
 // 3. Insert the values into the database
 func insertMovieIntoDb(record MovieCSV) {
-	query_obj := SESSION.Query(`INSERT INTO app.movies
+	counters.IncrementCounter("movies")
+	query_obj := config.SESSION.Query(`INSERT INTO app.movies
 	(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		record.Movie_ID,
@@ -388,7 +390,8 @@ func insertMovieIntoDb(record MovieCSV) {
 }
 
 func insertUserIntoDb(record UserCsv) {
-	query_obj := SESSION.Query(`INSERT INTO app.users
+	counters.IncrementCounter("users")
+	query_obj := config.SESSION.Query(`INSERT INTO app.users
 	(user_id, name, Email, Password)
 	VALUES (?, ?, ?, ?)`,
 		record.User_ID,
@@ -405,7 +408,7 @@ func insertUserIntoDb(record UserCsv) {
 }
 
 func insertUserMoviesIntoDb(record MovieByUserCsv) {
-	query_obj := SESSION.Query(`INSERT INTO app.movies_by_user
+	query_obj := config.SESSION.Query(`INSERT INTO app.movies_by_user
 	(user_id, movie_id, username, movie_title, director, release_date)
 	VALUES (?, ?, ?, ?, ?, ?)`,
 		record.User_ID,

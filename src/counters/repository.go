@@ -10,7 +10,7 @@ import (
 func IncrementCounter(idName string) (int64, error) {
 	session := config.SESSION
 	query := `
-        UPDATE counters
+        UPDATE app.counters
         SET current_id = current_id + 1
         WHERE id_name = ?
         IF EXISTS
@@ -23,7 +23,7 @@ func IncrementCounter(idName string) (int64, error) {
 
 	if !applied {
 		// Si no existe, inicializamos el contador en 1
-		err = session.Query("INSERT INTO counters (id_name, current_id) VALUES (?, 1)", idName).Exec()
+		err = session.Query("INSERT INTO app.counters (id_name, current_id) VALUES (?, 1)", idName).Exec()
 		if err != nil {
 			log.Println("Error initializing counter:", err)
 			return 0, err
@@ -33,7 +33,7 @@ func IncrementCounter(idName string) (int64, error) {
 
 	// Recuperar el nuevo valor del contador
 	var currentID int64
-	err = session.Query("SELECT current_id FROM counters WHERE id_name = ?", idName).Scan(&currentID)
+	err = session.Query("SELECT current_id FROM app.counters WHERE id_name = ?", idName).Scan(&currentID)
 	if err != nil {
 		log.Println("Error retrieving updated counter:", err)
 		return 0, err
@@ -46,7 +46,7 @@ func IncrementCounter(idName string) (int64, error) {
 func GetCounter(idName string) (int64, error) {
 	session := config.SESSION
 	var currentID int64
-	err := session.Query("SELECT current_id FROM counters WHERE id_name = ?", idName).Scan(&currentID)
+	err := session.Query("SELECT current_id FROM app.counters WHERE id_name = ?", idName).Scan(&currentID)
 	if err != nil {
 		log.Println("Error getting counter:", err)
 		return 0, err
