@@ -9,8 +9,8 @@ func RegisterRoutes(router *gin.Engine) {
 
 	group.GET("/", getUserByIDController)
 	group.GET("/verify", verifyEmailController)
-	group.POST("/", insertUserController)
+	group.POST("/", createUserController)
 	group.PUT("/", updateUserController)
-	group.PUT("/watched", updateWatchedMovieController)
+	group.PUT("/watched", addMovieToUserController)
 	group.DELETE("/", deleteUserController)
 }

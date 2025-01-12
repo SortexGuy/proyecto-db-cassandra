@@ -121,6 +121,7 @@ func main() {
 	}
 
 	// Crear tabla de peliculas por usuario
+	//los id deben ser bigint
 	result = SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies_by_user (
 		user_id int,
 		movie_id int,

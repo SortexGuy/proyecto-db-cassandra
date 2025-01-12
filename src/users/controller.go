@@ -8,6 +8,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func createUserController(c *gin.Context) {
+	var userDTO User
+	if err := c.ShouldBindJSON(&userDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := CreateUserService(userDTO)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "User created successfully",
+	})
+}
+
 func getUserByIDController(c *gin.Context) {
 	userIDText := c.Query("user_id")
 	userID, err := strconv.ParseInt(userIDText, 10, 64)
@@ -27,30 +45,9 @@ func getUserByIDController(c *gin.Context) {
 		return
 	}
 
-	data := []UserDTO{user}
+	data := []User{user}
 	c.JSON(http.StatusOK, gin.H{
 		"data": data,
-	})
-}
-
-func insertUserController(c *gin.Context) {
-	// TODO: Implementar insertar nuevos usuarios a la BD
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User POST not implemented",
-	})
-}
-
-func updateUserController(c *gin.Context) {
-	// TODO: Implementar actualizacion de valores de usuario
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User POST not implemented",
-	})
-}
-
-func deleteUserController(c *gin.Context) {
-	// TODO: Implementar eliminacion de usuario
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User POST not implemented",
 	})
 }
 
@@ -77,9 +74,65 @@ func verifyEmailController(c *gin.Context) {
 	})
 }
 
-func updateWatchedMovieController(c *gin.Context) {
+// Controlador para actualizar un usuario
+func updateUserController(c *gin.Context) {
+	var user User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "watched movie updated",
-	})
+	err := UpdateUserService(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
+}
+
+func addMovieToUserController(c *gin.Context) {
+	// Extraer userID y movieID de los parámetros
+	userIDParam := c.Param("user_id")
+	movieIDParam := c.Param("movie_id")
+
+	// Convertir parámetros a int64
+	userID, err := strconv.ParseInt(userIDParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	movieID, err := strconv.ParseInt(movieIDParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID"})
+		return
+	}
+
+	// Llamar al servicio para registrar la película
+	err = AddMovieToUserService(userID, movieID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Movie marked as watched successfully"})
+}
+
+// Controlador para eliminar un usuario
+func deleteUserController(c *gin.Context) {
+	idParam := c.Param("id")
+	userID, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	err = DeleteUserService(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
