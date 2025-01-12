@@ -24,8 +24,8 @@ func createMovieController(c *gin.Context) {
 }
 
 func getMovieByIDController(c *gin.Context) {
-	movieIDText := c.Query("movie_id")
-	movieID, err := strconv.ParseInt(movieIDText, 10, 64)
+	movieIDText := c.Param("id")
+	movieID, err := strconv.ParseInt(movieIDText, 0, 64)
 	if movieIDText == "" || err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -36,6 +36,7 @@ func getMovieByIDController(c *gin.Context) {
 
 	movie, err := getMovieByIDService(movieID)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "error getting movie",
 		})
@@ -70,17 +71,19 @@ func getAllMoviesController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch movies"})
 		return
 	}
-	c.JSON(http.StatusOK, movies)
 
+	c.JSON(http.StatusOK, gin.H{
+		"data": movies,
+	})
 }
 
 func getMovieByUserController(c *gin.Context) {
-	userIDText := c.Query("movie_id")
+	userIDText := c.Param("user_id")
 	userID, err := strconv.ParseInt(userIDText, 10, 64)
 	if userIDText == "" || err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "movie_id not found",
+			"message": "user_id not found",
 		})
 		return
 	}
@@ -93,9 +96,8 @@ func getMovieByUserController(c *gin.Context) {
 		return
 	}
 
-	data := movies
 	c.JSON(http.StatusOK, gin.H{
-		"data": data,
+		"data": movies,
 	})
 }
 

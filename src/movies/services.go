@@ -8,7 +8,7 @@ import (
 )
 
 func createMovieService(movie MovieDTO) error {
-	id, err := IncrementCounter("users")
+	id, err := IncrementCounter("movies")
 	if err != nil {
 		return err
 	}

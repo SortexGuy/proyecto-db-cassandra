@@ -7,11 +7,11 @@ func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/movies")
 
 	// CRUD básico
-	group.POST("/", createMovieController)
-	group.GET("/", getAllMoviesController)
 	group.GET("/:id", getMovieByIDController)
+	group.POST("/", createMovieController)
 	group.PUT("/:id", updateMovieController)
 	group.DELETE("/:id", deleteMovieController)
+	group.GET("/", getAllMoviesController)
 
 	// Relación usuario-película
 	group.GET("/user/:user_id", getMovieByUserController)

@@ -16,7 +16,7 @@ func main() {
 		log.Println("Please create a .env file in the root directory of the project")
 	}
 
-	cluster := config.GetClusterConfig()
+	cluster := config.GetClusterConfig(false)
 	log.Println("Trying to open Cassandra session")
 	session, err := cluster.CreateSession()
 	if err != nil {
@@ -38,3 +38,4 @@ func main() {
 
 	r.Run()
 }
+
