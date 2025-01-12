@@ -3,7 +3,7 @@ package movies
 import "log"
 
 func getMovieByIDService(id int64) (MovieDTO, error) {
-	movie, err := findMovieByIDRepo(id)
+	movie, err := findMovieByIDRepository(id)
 	return movie, err
 }
 

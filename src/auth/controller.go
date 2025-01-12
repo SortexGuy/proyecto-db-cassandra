@@ -13,7 +13,8 @@ func loginUserController(c *gin.Context) {
 		return
 	}
 
-	token, err := loginService(loginDTO.Username, loginDTO.Password)
+	//token, err := loginService(loginDTO.Username, loginDTO.Password)
+	token, err := loginService(loginDTO)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
