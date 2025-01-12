@@ -15,7 +15,7 @@ func createUserController(c *gin.Context) {
 		return
 	}
 
-	err := CreateUserService(userDTO)
+	err := createUserService(userDTO)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -82,7 +82,7 @@ func updateUserController(c *gin.Context) {
 		return
 	}
 
-	err := UpdateUserService(user)
+	err := updateUserService(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -110,7 +110,7 @@ func addMovieToUserController(c *gin.Context) {
 	}
 
 	// Llamar al servicio para registrar la película
-	err = AddMovieToUserService(userID, movieID)
+	err = addMovieToUserService(userID, movieID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -128,7 +128,7 @@ func deleteUserController(c *gin.Context) {
 		return
 	}
 
-	err = DeleteUserService(userID)
+	err = deleteUserService(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

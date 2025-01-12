@@ -1,14 +1,24 @@
 package movies
 
-import "log"
+import (
+	"errors"
+	"log"
 
-func getMovieByIDService(id int64) (MovieDTO, error) {
-	movie, err := findMovieByIDRepository(id)
-	return movie, err
+	. "github.com/SortexGuy/proyecto-db-cassandra/src/counters"
+)
+
+func createMovieService(movie MovieDTO) error {
+	id, err := IncrementCounter("users")
+	if err != nil {
+		return err
+	}
+	movie.ID = id
+
+	return createMovieRepository(movie)
 }
 
 func getAllMoviesService() ([]Movie, error) {
-	movies, err := getAllMoviesRepository()
+	movies, err := getAllMoviesIDRepository()
 
 	// Contabilizar cuántas películas se extrajeron
 	count := len(movies)
@@ -16,9 +26,17 @@ func getAllMoviesService() ([]Movie, error) {
 	return movies, err
 }
 
+func getMovieByIDService(movieID int64) (MovieDTO, error) {
+	if movieID == 0 {
+		return MovieDTO{}, errors.New("movie ID is required")
+	}
+
+	return getMovieByIDRepository(movieID)
+}
+
 // GetMoviesByUser  obtiene todas las películas de un usuario específico
 func getMoviesByUserService(userID int64) ([]MovieByUser, error) {
-	moviesByUser, err := getAllMoviesByUserRepository(userID)
+	moviesByUser, err := getMoviesByUserRepository(userID)
 	if err != nil {
 		log.Println("Error fetching movies by user:", err)
 		return nil, err
@@ -29,4 +47,20 @@ func getMoviesByUserService(userID int64) ([]MovieByUser, error) {
 	log.Printf("Total movies by user %d extracted: %d\n", userID, count)
 
 	return moviesByUser, nil
+}
+
+func UpdateMovieService(movie MovieDTO) error {
+	if movie.ID == 0 {
+		return errors.New("movie ID is required")
+	}
+
+	return UpdateMovieRepository(movie)
+}
+
+func DeleteMovieService(movieID int64) error {
+	if movieID == 0 {
+		return errors.New("movie ID is required")
+	}
+
+	return DeleteMovieRepository(movieID)
 }

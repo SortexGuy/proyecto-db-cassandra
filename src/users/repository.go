@@ -7,7 +7,7 @@ import (
 )
 
 // Inserta un usuario en la tabla
-func CreateUserRepository(user User) error {
+func createUserRepository(user User) error {
 	session := config.SESSION
 
 	query := `INSERT INTO app.users (id, name, email, password) VALUES (?, ?, ?, ?)`
@@ -19,7 +19,7 @@ func CreateUserRepository(user User) error {
 	return nil
 }
 
-func AddMovieToUserRepository(userID int64, movieID int64) error {
+func addMovieToUserRepository(userID int64, movieID int64) error {
 	session := config.SESSION
 
 	query := `
@@ -58,7 +58,7 @@ func getAllUsersRepository() ([]User, error) {
 }
 
 // UpdateUserRepository actualiza un usuario por ID
-func UpdateUserRepository(user User) error {
+func updateUserRepository(user User) error {
 	session := config.SESSION
 
 	query := `UPDATE app.users SET name = ?, email = ?, password = ? WHERE id = ?`
@@ -70,7 +70,7 @@ func UpdateUserRepository(user User) error {
 	return nil
 }
 
-func DeleteUserRepository(userID int64) error {
+func deleteUserRepository(userID int64) error {
 	session := config.SESSION
 
 	query := `DELETE FROM app.users WHERE id = ?`

@@ -8,6 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func createMovieController(c *gin.Context) {
+	var movie MovieDTO
+	if err := c.ShouldBindJSON(&movie); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err := createMovieService(movie)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "Movie created successfully"})
+}
+
 func getMovieByIDController(c *gin.Context) {
 	movieIDText := c.Query("movie_id")
 	movieID, err := strconv.ParseInt(movieIDText, 10, 64)
@@ -31,6 +46,21 @@ func getMovieByIDController(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": data,
 	})
+}
+
+func updateMovieController(c *gin.Context) {
+	var movie MovieDTO
+	if err := c.ShouldBindJSON(&movie); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err := UpdateMovieService(movie)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Movie updated successfully"})
 }
 
 // GetMovies maneja la solicitud para obtener todas las películas
@@ -68,23 +98,18 @@ func getMovieByUserController(c *gin.Context) {
 		"data": data,
 	})
 }
-func insertMovieController(c *gin.Context) {
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "movie not inserted",
-	})
-}
-
-func updateMovieController(c *gin.Context) {
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "movie not updated",
-	})
-}
 
 func deleteMovieController(c *gin.Context) {
+	movieID, err := strconv.ParseInt(c.Param("movie_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "movie not deleted",
-	})
+	err = DeleteMovieService(movieID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Movie deleted successfully"})
 }
