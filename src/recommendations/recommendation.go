@@ -1,12 +1,21 @@
-package algo
+package recommendations
 
 import (
 	"container/heap"
 	"fmt"
 
+	. "github.com/SortexGuy/proyecto-db-cassandra/src/movies"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 )
+
+//"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
+
+type Recommendation struct {
+	UserID             int64   `json:"user_id"`
+	NumRecommendations int     `json:"num_recommendations"`
+	Movies             []int64 `json:"recommendations"`
+}
 
 // Nodo personalizado que implementa la interfaz graph.Node
 type Node struct {
@@ -18,12 +27,7 @@ func (n Node) ID() int64 {
 	return n.id
 }
 
-type UserMovie struct {
-	UserID  int64
-	MovieID int64
-}
-
-func createGraph(users []int64, movies []int64, relations []UserMovie) *simple.UndirectedGraph {
+func CreateGraph(users []int64, movies []int64, relations []MovieByUser) *simple.UndirectedGraph {
 	g := simple.NewUndirectedGraph()
 
 	// Mapas para buscar nodos por ID
@@ -68,7 +72,8 @@ type Item struct {
 	Score float64
 }
 
-func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps int, lambda float64, num_recommendations int) []int64 {
+func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps int, lambda float64, num_recommendations int) Recommendation {
+
 	resources, maxResources, heat, maxHeat := propagate(g, initialUserID, steps)
 	// Normalizar ambos resultados y combinar
 	hybridScores := make(map[int64]float64)
@@ -87,7 +92,15 @@ func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps 
 		}
 
 	}
-	return sortMapDescending(hybridScores, num_recommendations)
+	var recommendations Recommendation
+
+	// Asigna valores a los campos correctamente
+	recommendations.UserID = initialUserID
+	recommendations.NumRecommendations = num_recommendations
+	recommendations.Movies = sortMapDescending(hybridScores, num_recommendations)
+
+	return recommendations
+
 }
 
 type ResourceInfo struct {

@@ -65,7 +65,7 @@ func updateMovieController(c *gin.Context) {
 
 // GetMovies maneja la solicitud para obtener todas las películas
 func getAllMoviesController(c *gin.Context) {
-	movies, err := getAllMoviesService()
+	movies, err := GetAllMoviesService()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch movies"})
 		return
@@ -74,17 +74,17 @@ func getAllMoviesController(c *gin.Context) {
 
 }
 
-func getMovieByUserController(c *gin.Context) {
-	userIDText := c.Query("movie_id")
+func getMovieWatchedByUserController(c *gin.Context) {
+	userIDText := c.Query("user_id")
 	userID, err := strconv.ParseInt(userIDText, 10, 64)
 	if userIDText == "" || err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "movie_id not found",
+			"message": "user_id not found",
 		})
 		return
 	}
-	movies, err := getMoviesByUserService(userID)
+	movies, err := GetMoviesWatchedByUserService(userID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
