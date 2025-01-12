@@ -14,5 +14,5 @@ func RegisterRoutes(router *gin.Engine) {
 	group.GET("/", getAllMoviesController)
 
 	// Relación usuario-película
-	group.GET("/user/:user_id", getMovieByUserController)
+	group.GET("/user/:user_id", getMovieWatchedByUserController)
 }

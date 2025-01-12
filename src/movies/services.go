@@ -17,7 +17,12 @@ func createMovieService(movie MovieDTO) error {
 	return createMovieRepository(movie)
 }
 
-func getAllMoviesService() ([]Movie, error) {
+func GetAllMoviesService() ([]MovieDTO, error) {
+	movies, err := getAllMoviesRepository()
+	return movies, err
+}
+
+func GetAllMoviesIDsService() ([]int64, error) {
 	movies, err := getAllMoviesIDRepository()
 
 	// Contabilizar cuántas películas se extrajeron
@@ -35,7 +40,7 @@ func getMovieByIDService(movieID int64) (MovieDTO, error) {
 }
 
 // GetMoviesByUser  obtiene todas las películas de un usuario específico
-func getMoviesByUserService(userID int64) ([]MovieByUser, error) {
+func GetMoviesWatchedByUserService(userID int64) ([]MovieByUser, error) {
 	moviesByUser, err := getMoviesByUserRepository(userID)
 	if err != nil {
 		log.Println("Error fetching movies by user:", err)

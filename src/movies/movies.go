@@ -20,11 +20,6 @@ type MovieDTO struct {
 	Gross         string  `json:"gross"`
 }
 
-// Movie representa la estructura de una película
-type Movie struct {
-	ID int64 `json:"id"`
-}
-
 // MovieByUser  representa la relación entre una película y un usuario
 type MovieByUser struct {
 	UserID  int64 `json:"user_id"`

@@ -28,7 +28,6 @@ func createUserService(user User) error {
 	return nil
 
 }
-
 func addMovieToUserService(userID int64, movieID int64) error {
 	// Validación básica
 	if userID == 0 {
@@ -69,7 +68,7 @@ func getUserByIDService(id int64) (User, error) {
 	return user, errors.New("User Not Found") // Retorna 0 si no se encuentra el usuario
 }
 
-func getAllUserIDsService() ([]int64, error) {
+func GetAllUserIDsService() ([]int64, error) {
 	ids := []int64{}
 	users, err := getAllUsersRepository()
 	if err != nil {

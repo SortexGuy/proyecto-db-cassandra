@@ -10,7 +10,9 @@ func createMovieRepository(movie MovieDTO) error {
 	session := config.SESSION
 	query := `
 		INSERT INTO app.movies
-		(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
+		(movie_id, poster_link, series_title, released_year, certificate,
+		runtime, genre, imdb_rating, overview, 
+		meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	err := session.Query(query,
@@ -40,17 +42,38 @@ func createMovieRepository(movie MovieDTO) error {
 	return nil
 }
 
-// GetAllMovies obtiene todas las películas de la base de datos
-func getAllMoviesIDRepository() ([]Movie, error) {
+func getAllMoviesRepository() ([]MovieDTO, error) {
 	session := config.SESSION
-	var movies []Movie
+	var movies []MovieDTO
 	query := "SELECT Movie_ID FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
 
-	var movie Movie
-	for iter.Scan(&movie.ID) {
+	var movie MovieDTO
+	for iter.Scan(&movie) {
+		movies = append(movies, movie)
+	}
+
+	if err := iter.Close(); err != nil {
+		log.Println("Error closing iterator:", err)
+		return nil, err
+	}
+
+	return movies, nil
+}
+
+// GetAllMovies obtiene todas las películas de la base de datos
+func getAllMoviesIDRepository() ([]int64, error) {
+	session := config.SESSION
+	var movies []int64
+	query := "SELECT Movie_ID FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
+
+	iter := session.Query(query).Iter()
+	defer iter.Close()
+
+	var movie int64
+	for iter.Scan(&movie) {
 		movies = append(movies, movie)
 	}
 
@@ -81,7 +104,7 @@ func getMovieByIDRepository(movieID int64) (MovieDTO, error) {
 	return movie, nil
 }
 
-func getAllMoviesByUserRepository() ([]MovieByUser, error) {
+func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 	session := config.SESSION
 	var moviesByUser []MovieByUser
 
@@ -130,7 +153,9 @@ func UpdateMovieRepository(movie MovieDTO) error {
 	session := config.SESSION
 	query := `
 		UPDATE app.movies SET 
-		poster_link = ?, series_title = ?, released_year = ?, certificate = ?, runtime = ?, genre = ?, imdb_rating = ?, overview = ?, meta_score = ?, director = ?, star1 = ?, star2 = ?, star3 = ?, star4 = ?, no_of_votes = ?, gross = ?
+		poster_link = ?, series_title = ?, released_year = ?, certificate = ?, runtime = ?, genre = ?, 
+		imdb_rating = ?, overview = ?, meta_score = ?, 
+		director = ?, star1 = ?, star2 = ?, star3 = ?, star4 = ?, no_of_votes = ?, gross = ?
 		WHERE movie_id = ?
 	`
 	err := session.Query(query,
