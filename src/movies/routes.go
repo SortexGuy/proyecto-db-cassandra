@@ -6,10 +6,13 @@ import "github.com/gin-gonic/gin"
 func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/movies")
 
-	group.GET("/", getMovieByIDController)
-	group.GET("/", getMovieByUserController)
+	// CRUD básico
+	group.POST("/", createMovieController)
 	group.GET("/", getAllMoviesController)
-	group.POST("/", insertMovieController)
-	group.PUT("/", updateMovieController)
-	group.DELETE("/", deleteMovieController)
+	group.GET("/:id", getMovieByIDController)
+	group.PUT("/:id", updateMovieController)
+	group.DELETE("/:id", deleteMovieController)
+
+	// Relación usuario-película
+	group.GET("/user/:user_id", getMovieByUserController)
 }

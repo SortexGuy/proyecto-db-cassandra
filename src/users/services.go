@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUserService(user User) error {
+func createUserService(user User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -20,7 +20,7 @@ func CreateUserService(user User) error {
 		return err
 	}
 	user.ID = id
-	err = CreateUserRepository(user)
+	err = createUserRepository(user)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func CreateUserService(user User) error {
 
 }
 
-func AddMovieToUserService(userID int64, movieID int64) error {
+func addMovieToUserService(userID int64, movieID int64) error {
 	// Validación básica
 	if userID == 0 {
 		return errors.New("user ID is required")
@@ -39,7 +39,7 @@ func AddMovieToUserService(userID int64, movieID int64) error {
 	}
 
 	// Llamar al repositorio para agregar la película
-	err := AddMovieToUserRepository(userID, movieID)
+	err := addMovieToUserRepository(userID, movieID)
 	if err != nil {
 		log.Println("Error in AddMovieToUserService:", err)
 		return err
@@ -102,7 +102,7 @@ func verifyEmailService(emailText string) (bool, error) {
 }
 
 // Actualiza los datos de un usuario
-func UpdateUserService(user User) error {
+func updateUserService(user User) error {
 	// Validar datos del usuario
 	if user.ID == 0 {
 		return errors.New("user ID is required")
@@ -112,7 +112,7 @@ func UpdateUserService(user User) error {
 	}
 
 	// Llamar al repositorio para actualizar el usuario
-	err := UpdateUserRepository(user)
+	err := updateUserRepository(user)
 	if err != nil {
 		log.Println("Error in UpdateUserService:", err)
 		return err
@@ -122,14 +122,14 @@ func UpdateUserService(user User) error {
 }
 
 // Elimina un usuario por ID
-func DeleteUserService(userID int64) error {
+func deleteUserService(userID int64) error {
 	// Validar el ID del usuario
 	if userID == 0 {
 		return errors.New("user ID is required")
 	}
 
 	// Llamar al repositorio para eliminar el usuario
-	err := DeleteUserRepository(userID)
+	err := deleteUserRepository(userID)
 	if err != nil {
 		log.Println("Error in DeleteUserService:", err)
 		return err

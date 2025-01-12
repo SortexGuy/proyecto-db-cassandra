@@ -16,7 +16,7 @@ type MovieDTO struct {
 	Star2         string  `json:"star2"`
 	Star3         string  `json:"star3"`
 	Star4         string  `json:"star4"`
-	No_of_Votes   int     `json:"no_of_votes"`
+	No_Votes      int     `json:"no_votes"`
 	Gross         string  `json:"gross"`
 }
 
@@ -35,3 +35,25 @@ type MovieByUser struct {
 type MovieIDOnly struct {
 	ID int64 `json:"id"`
 }
+
+/*
+CREATE TABLE app.movies (
+    movie_id bigint PRIMARY KEY,
+    poster_link text,
+    series_title text,
+    released_year int,
+    certificate text,
+    runtime text,
+    genre text,
+    imdb_rating float,
+    overview text,
+    meta_score int,
+    director text,
+    star1 text,
+    star2 text,
+    star3 text,
+    star4 text,
+    no_of_votes int,
+    gross text
+);
+*/
