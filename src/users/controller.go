@@ -32,3 +32,24 @@ func getUserByIDController(c *gin.Context) {
 		"data": data,
 	})
 }
+
+func insertUserController(c *gin.Context) {
+	// TODO: Implementar insertar nuevos usuarios a la BD
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User POST not implemented",
+	})
+}
+
+func updateUserController(c *gin.Context) {
+	// TODO: Implementar actualizacion de valores de usuario
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User POST not implemented",
+	})
+}
+
+func deleteUserController(c *gin.Context) {
+	// TODO: Implementar eliminacion de usuario
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User POST not implemented",
+	})
+}
