@@ -6,19 +6,47 @@ import (
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
 )
 
+// Inserta un usuario en la tabla
+func CreateUserRepository(user User) error {
+	session := config.SESSION
+
+	query := `INSERT INTO app.users (id, name, email, password) VALUES (?, ?, ?, ?)`
+	err := session.Query(query, user.ID, user.Name, user.Email, user.Password).Exec()
+	if err != nil {
+		log.Println("Error inserting user:", err)
+		return err
+	}
+	return nil
+}
+
+func AddMovieToUserRepository(userID int64, movieID int64) error {
+	session := config.SESSION
+
+	query := `
+        INSERT INTO app.movies_by_user (user_id, movie_id)
+        VALUES (?, ?)
+    `
+	err := session.Query(query, userID, movieID).Exec()
+	if err != nil {
+		log.Println("Error adding movie to user:", err)
+		return err
+	}
+	return nil
+}
+
 // GetAllUsers obtiene todos los usuarios de la base de datos
 func getAllUsersRepository() ([]User, error) {
-	session := config.SESSION
+	session := config.SESSION // Asegúrate de que config.SESSION esté correctamente inicializado
 	var users []User
-	query := "SELECT user_id FROM users"
+	query := "SELECT user_id, name, email, FROM app.users"
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
 
-	var userID int64
-	for iter.Scan(&userID) {
-		// Almacenar el ID del usuario
-		users = append(users, User{ID: userID})
+	var user User
+	for iter.Scan(&user.ID, &user.Name, &user.Email) {
+		// Agregar el usuario al slice
+		users = append(users, user)
 	}
 
 	if err := iter.Close(); err != nil {
@@ -29,10 +57,27 @@ func getAllUsersRepository() ([]User, error) {
 	return users, nil
 }
 
-func verifyEmailRepository(emailText string) (bool, error) {
-	// TODO: Verificar emails
-	// Si se van a usar las funciones que ya existen para buscar el email en un arreglo
-	// entonces esta funcion se puede borrar
+// UpdateUserRepository actualiza un usuario por ID
+func UpdateUserRepository(user User) error {
+	session := config.SESSION
 
-	return false, nil
+	query := `UPDATE app.users SET name = ?, email = ?, password = ? WHERE id = ?`
+	err := session.Query(query, user.Name, user.Email, user.Password, user.ID).Exec()
+	if err != nil {
+		log.Println("Error updating user:", err)
+		return err
+	}
+	return nil
+}
+
+func DeleteUserRepository(userID int64) error {
+	session := config.SESSION
+
+	query := `DELETE FROM app.users WHERE id = ?`
+	err := session.Query(query, userID).Exec()
+	if err != nil {
+		log.Println("Error deleting user:", err)
+		return err
+	}
+	return nil
 }
