@@ -25,3 +25,8 @@ func getUserByIDService(id int64) (UserDTO, error) {
 
 	return user, errors.New("User Not Found") // Retorna 0 si no se encuentra el usuario
 }
+
+func verifyEmailService(emailText string) (bool, error) {
+	exist, err := verifyEmailRepository(emailText)
+	return exist, err
+}

@@ -68,3 +68,23 @@ func getMovieByUserController(c *gin.Context) {
 		"data": data,
 	})
 }
+func insertMovieController(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "movie not inserted",
+	})
+}
+
+func updateMovieController(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "movie not updated",
+	})
+}
+
+func deleteMovieController(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "movie not deleted",
+	})
+}

@@ -1,17 +1,16 @@
 package auth
 
-import (
-// "errors"
+// import (
+// 	"errors"
 //
-// "golang.org/x/crypto/bcrypt"
-)
+// 	"github.com/SortexGuy/proyecto-db-cassandra/config"
+// )
 
-func loginRepository(username, password string) (*LoginDTO, error) {
-	// db := config.DB
-	// var user schema.User
-
-	// Busca al usuario por el username
-	// if err := db.Where("username = ?", username).First(&user).Error; err != nil {
+func loginRepository(loginData LoginDTO) (LoginDTO, error) {
+	// db := config.SESSION
+	//
+	// // Busca al usuario por el username
+	// if err := db.Where("username = ?", loginData.username).First(&user).Error; err != nil {
 	// 	return nil, errors.New("invalid credentials")
 	// }
 	//
@@ -19,7 +18,11 @@ func loginRepository(username, password string) (*LoginDTO, error) {
 	// if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 	// 	return nil, errors.New("invalid credentials")
 	// }
-	//
-	// return &user, nil
-	return &LoginDTO{}, nil
+
+	return loginData, nil
+}
+
+func registrationRepository(registrationData RegistrationDTO) (RegistrationDTO, error) {
+
+	return registrationData, nil
 }

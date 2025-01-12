@@ -28,3 +28,11 @@ func getAllUsersRepository() ([]User, error) {
 
 	return users, nil
 }
+
+func verifyEmailRepository(emailText string) (bool, error) {
+	// TODO: Verificar emails
+	// Si se van a usar las funciones que ya existen para buscar el email en un arreglo
+	// entonces esta funcion se puede borrar
+
+	return false, nil
+}

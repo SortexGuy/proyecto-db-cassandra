@@ -53,3 +53,33 @@ func deleteUserController(c *gin.Context) {
 		"message": "User POST not implemented",
 	})
 }
+
+func verifyEmailController(c *gin.Context) {
+	emailText := c.Query("email")
+	if emailText == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "email text not found",
+		})
+		return
+	}
+
+	exist, err := verifyEmailService(emailText)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error getting user",
+		})
+		return
+	}
+
+	data := []bool{exist}
+	c.JSON(http.StatusOK, gin.H{
+		"data": data,
+	})
+}
+
+func updateWatchedMovieController(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "watched movie updated",
+	})
+}
