@@ -11,12 +11,6 @@ func RegisterRoutes(router *gin.Engine) {
 	group := router.Group("/movies")
 
 	group.GET("/", getMovieByIDController)
-	group.GET("/", func(c *gin.Context) {
-		movies, err := GetMovieController()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch movies"})
-			return
-		}
-		c.JSON(http.StatusOK, movies)
-	})
+	group.GET("/", getMovieByUserController)
+	group.GET("/", getAllMoviesController)
 }

@@ -18,7 +18,7 @@ func getAllMoviesService() ([]Movie, error) {
 
 // GetMoviesByUser  obtiene todas las películas de un usuario específico
 func getMoviesByUserService(userID int64) ([]MovieByUser, error) {
-	moviesByUser, err := getAllMoviesByUser(userID)
+	moviesByUser, err := getAllMoviesByUserRepository(userID)
 	if err != nil {
 		log.Println("Error fetching movies by user:", err)
 		return nil, err
