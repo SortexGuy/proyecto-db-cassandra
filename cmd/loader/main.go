@@ -137,6 +137,18 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// Crear tabla para guardar las recomendaciones
+	result = config.SESSION.Query(`CREATE TABLE app.recommendations (
+		user_id bigint,
+		movie_id bigint,
+		num_recommendations bigint,
+		PRIMARY KEY( user_id, movie_id )
+	);`)
+	err = result.Exec()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	log.Println("Database Setup Finished")
 
 	err = readMoviesFromCSV("./data/movies_copy.csv")

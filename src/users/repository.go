@@ -38,7 +38,7 @@ func addMovieToUserRepository(userID int64, movieID int64) error {
 func getAllUsersRepository() ([]User, error) {
 	session := config.SESSION // Asegúrate de que config.SESSION esté correctamente inicializado
 	var users []User
-	query := "SELECT user_id, name, email, FROM app.users"
+	query := "SELECT user_id, name, email FROM users"
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()

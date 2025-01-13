@@ -6,6 +6,7 @@ import (
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/recommendations"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -35,7 +36,7 @@ func main() {
 	})
 	movies.RegisterRoutes(r)
 	users.RegisterRoutes(r)
+	recommendations.RegisterRoutes(r)
 
 	r.Run()
 }
-

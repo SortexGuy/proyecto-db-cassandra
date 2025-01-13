@@ -1,6 +1,7 @@
 package recommendations
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -22,6 +23,8 @@ func makeRecommendationController(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie_id"})
 		return
 	}
+
+	log.Println("Entrando al servicio")
 	// Llamar al servicio
 	r, err := makeRecommendationService(userID, lambda)
 	if err != nil {

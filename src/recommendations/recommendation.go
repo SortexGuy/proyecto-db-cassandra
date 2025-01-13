@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	. "github.com/SortexGuy/proyecto-db-cassandra/src/movies"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 )
@@ -27,7 +27,7 @@ func (n Node) ID() int64 {
 	return n.id
 }
 
-func CreateGraph(users []int64, movies []int64, relations []MovieByUser) *simple.UndirectedGraph {
+func CreateGraph(users []int64, movies []int64, relations []movies.MovieByUser) *simple.UndirectedGraph {
 	g := simple.NewUndirectedGraph()
 
 	// Mapas para buscar nodos por ID
@@ -73,7 +73,6 @@ type Item struct {
 }
 
 func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps int, lambda float64, num_recommendations int) Recommendation {
-
 	resources, maxResources, heat, maxHeat := propagate(g, initialUserID, steps)
 	// Normalizar ambos resultados y combinar
 	hybridScores := make(map[int64]float64)
@@ -100,7 +99,6 @@ func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps 
 	recommendations.Movies = sortMapDescending(hybridScores, num_recommendations)
 
 	return recommendations
-
 }
 
 type ResourceInfo struct {

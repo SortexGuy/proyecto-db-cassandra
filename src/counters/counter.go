@@ -1,7 +1,7 @@
 package counters
 
 type Counter struct {
-	id_name    []string
+	id_name    string
 	current_id int64
 }
 
