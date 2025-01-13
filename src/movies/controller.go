@@ -78,7 +78,7 @@ func getAllMoviesController(c *gin.Context) {
 }
 
 func getMovieWatchedByUserController(c *gin.Context) {
-	userIDText := c.Query("user_id")
+	userIDText := c.Param("user_id")
 	userID, err := strconv.ParseInt(userIDText, 10, 64)
 	if userIDText == "" || err != nil {
 		log.Println(err)
@@ -102,7 +102,7 @@ func getMovieWatchedByUserController(c *gin.Context) {
 }
 
 func deleteMovieController(c *gin.Context) {
-	movieID, err := strconv.ParseInt(c.Param("movie_id"), 10, 64)
+	movieID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID"})
 		return

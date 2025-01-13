@@ -27,7 +27,7 @@ func createUserController(c *gin.Context) {
 }
 
 func getUserByIDController(c *gin.Context) {
-	userIDText := c.Query("user_id")
+	userIDText := c.Param("id")
 	userID, err := strconv.ParseInt(userIDText, 10, 64)
 	if userIDText == "" || err != nil {
 		log.Println(err)
@@ -93,7 +93,7 @@ func updateUserController(c *gin.Context) {
 
 func addMovieToUserController(c *gin.Context) {
 	// Extraer userID y movieID de los parámetros
-	userIDParam := c.Param("user_id")
+	userIDParam := c.Param("id")
 	movieIDParam := c.Param("movie_id")
 
 	// Convertir parámetros a int64
