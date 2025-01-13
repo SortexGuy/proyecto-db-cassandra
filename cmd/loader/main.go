@@ -4,49 +4,18 @@ import (
 	"encoding/csv"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/counters"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/schema"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
-
-type MovieCSV struct {
-	Movie_ID      int
-	Poster_Link   string
-	Series_Title  string
-	Released_Year int
-	Certificate   string
-	Runtime       string
-	Genre         string
-	IMDB_Rating   float64
-	Overview      string
-	Meta_score    int
-	Director      string
-	Star1         string
-	Star2         string
-	Star3         string
-	Star4         string
-	No_of_Votes   int
-	Gross         string
-}
-
-type UserCsv struct {
-	User_ID  int
-	Name     string
-	Email    string
-	Password string
-}
-
-type MovieByUserCsv struct {
-	User_ID      int
-	Movie_ID     int
-	Username     string
-	Movie_Title  string
-	Director     string
-	Release_Date int
-}
 
 func main() {
 	if err := godotenv.Load(".env"); err != nil {
@@ -74,7 +43,7 @@ func main() {
 
 	// Crear tabla de peliculas
 	result = config.SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies(
-		movie_id bigint,
+		movie_id uuid,
 		poster_link text,
 		series_title text,
 		released_year int,
@@ -100,7 +69,7 @@ func main() {
 
 	// Crear tabla de usuarios
 	result = config.SESSION.Query(`CREATE TABLE IF NOT EXISTS app.users (
-		user_id bigint,
+		user_id uuid,
 		name text,
 		email text,
 		password text,
@@ -114,13 +83,11 @@ func main() {
 	// Crear tabla de peliculas por usuario
 	//los id deben ser bigint
 	result = config.SESSION.Query(`CREATE TABLE IF NOT EXISTS app.movies_by_user (
-		user_id bigint,
-		movie_id bigint,
-		username text,
-		movie_title text,
-		director text,
-		release_date int,
-		PRIMARY KEY( user_id,movie_id )
+		user_id uuid,
+		movie_id uuid,
+		watched timestamp,
+		rewatched timestamp,
+		PRIMARY KEY( user_id, movie_id )
 	);`)
 	err = result.Exec()
 	if err != nil {
@@ -139,9 +106,9 @@ func main() {
 
 	// Crear tabla para guardar las recomendaciones
 	result = config.SESSION.Query(`CREATE TABLE app.recommendations (
-		user_id bigint,
-		movie_id bigint,
-		PRIMARY KEY( user_id, movie_id )
+		user_id uuid,
+		movie_id uuid,
+		PRIMARY KEY( (user_id), movie_id )
 	);`)
 	err = result.Exec()
 	if err != nil {
@@ -160,9 +127,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	err = readUsersMoviesFromCSV("./data/peliculas_vistas.csv")
+	// err = readUsersMoviesFromCSV("./data/peliculas_vistas.csv")
+	err = generateMoviesByUsers()
 	if err != nil {
-
 		log.Fatalln(err)
 	}
 
@@ -191,7 +158,11 @@ func readMoviesFromCSV(filepath string) (err error) {
 			continue
 		}
 
-		processMovieRecord(record)
+		err = processMovieRecord(record)
+		if err != nil {
+			log.Println("Processing movies failed")
+			return err
+		}
 		count += 1
 	}
 	log.Println("Records processed: ", count)
@@ -228,211 +199,212 @@ func readUsersFromCSV(filepath string) (err error) {
 }
 
 // Función para leer el archivo CSV de usuarios
-func readUsersMoviesFromCSV(filepath string) (err error) {
-	file, err := os.Open(filepath)
-	if err != nil {
+// func readUsersMoviesFromCSV(filepath string) (err error) {
+// 	file, err := os.Open(filepath)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer file.Close()
+//
+// 	reader := csv.NewReader(file)
+// 	count := -1
+// 	for {
+// 		record, err := reader.Read()
+// 		if err == io.EOF {
+// 			break
+// 		}
+// 		if err != nil {
+// 			log.Fatalln(err)
+// 			continue
+// 		}
+//
+// 		processUserMoviesRecord(record) // Procesar el registro de usuarios x pelicula
+// 		count += 1
+// 	}
+// 	log.Println("Users movies records processed: ", count)
+//
+// 	return nil
+// }
+
+func generateMoviesByUsers() error {
+	var err error
+	var movieID uuid.UUID
+	var movieIDs uuid.UUIDs
+	iter := config.SESSION.Query(`SELECT movie_id FROM app.movies`).Iter()
+	for iter.Scan(&movieID) {
+		movieIDs = append(movieIDs, movieID)
+	}
+	if err = iter.Close(); err != nil {
+		log.Println("Error on scanning movies")
 		return err
 	}
-	defer file.Close()
 
-	reader := csv.NewReader(file)
-	count := -1
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalln(err)
-			continue
-		}
-
-		processUserMoviesRecord(record) // Procesar el registro de usuarios x pelicula
-		count += 1
+	var userID uuid.UUID
+	var userIDs uuid.UUIDs
+	iter = config.SESSION.Query(`SELECT user_id FROM app.users`).Iter()
+	for iter.Scan(&userID) {
+		userIDs = append(userIDs, userID)
 	}
-	log.Println("Users movies records processed: ", count)
+	if err = iter.Close(); err != nil {
+		log.Println("Error on scanning users")
+		return err
+	}
+
+	err = processMoviesByUser(movieIDs, userIDs)
+	return err
+}
+
+func processMoviesByUser(movieIDs, userIDs uuid.UUIDs) error {
+	for _, userID := range userIDs {
+		p := rand.Perm(len(movieIDs))
+		for _, movieID := range p[:5] {
+			timeframeSec := 24 * 7 * rand.Intn(12) * -int(time.Hour)
+			watched := time.Now().Add(time.Duration(timeframeSec))
+			max := time.Now().Unix()
+			min := watched.Unix()
+			rewatched := time.Unix(rand.Int63n(max-min)+min, 0)
+
+			record := schema.DBMovieByUser{
+				User_ID: userID, Movie_ID: movieIDs[movieID],
+				Watched: watched, Rewatched: rewatched,
+			}
+
+			err := insertMoviesByUserIntoDb(record)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
 
 // 2. Process the records in each line
-func processMovieRecord(line []string) {
+func processMovieRecord(line []string) error {
 	if len(line) < 16 {
 		log.Println("Invalid length, discarding line...")
-		return
+		return nil
 	}
-
 	if line[0] == "Movie_ID" {
 		// ignore first line
-		return
+		return nil
 	}
 
 	// note: error checking omitted for brevity
-	Movie_ID, _ := strconv.Atoi(line[0])
-	Poster_Link := line[1]
-	Series_Title := line[2]
+	// Movie_ID, _ := strconv.Atoi(line[0])
+	Movie_ID, _ := uuid.NewUUID()
 	Released_Year, _ := strconv.Atoi(line[3])
-	Certificate := line[4]
-	Runtime := line[5]
-	Genre := line[6]
 	IMDB_Rating, _ := strconv.ParseFloat(line[7], 64)
-	Overview := line[8]
 	Meta_score, _ := strconv.Atoi(line[9])
-	Director := line[10]
-	Star1 := line[11]
-	Star2 := line[12]
-	Star3 := line[13]
-	Star4 := line[14]
 	No_of_Votes, _ := strconv.Atoi(line[15])
-	Gross := line[16]
 
-	buf := MovieCSV{
+	buf := schema.DBMovie{
 		Movie_ID:      Movie_ID,
-		Poster_Link:   Poster_Link,
-		Series_Title:  Series_Title,
+		Poster_Link:   line[1],
+		Series_Title:  line[2],
 		Released_Year: Released_Year,
-		Certificate:   Certificate,
-		Runtime:       Runtime,
-		Genre:         Genre,
+		Certificate:   line[4],
+		Runtime:       line[5],
+		Genre:         line[6],
 		IMDB_Rating:   IMDB_Rating,
-		Overview:      Overview,
+		Overview:      line[8],
 		Meta_score:    Meta_score,
-		Director:      Director,
-		Star1:         Star1,
-		Star2:         Star2,
-		Star3:         Star3,
-		Star4:         Star4,
+		Director:      line[10],
+		Star1:         line[11],
+		Star2:         line[12],
+		Star3:         line[13],
+		Star4:         line[14],
 		No_of_Votes:   No_of_Votes,
-		Gross:         Gross,
+		Gross:         line[16],
 	}
 
-	insertMovieIntoDb(buf)
+	err := insertMovieIntoDb(buf)
+	if err != nil {
+		log.Println("Error inserting movie to db")
+	}
+	return err
 }
 
 // 2. Process the records in each line for users
-func processUserRecord(line []string) {
+func processUserRecord(line []string) error {
 	if len(line) < 4 {
 		log.Println("Invalid length, discarding line...")
-		return
+		return nil
 	}
-
 	if line[0] == "ID" {
 		// ignore first line
-		return
+		return nil
 	}
 
 	// note: error checking omitted for brevity
-	User_ID, _ := strconv.Atoi(line[0])
-	Name := line[1]
-	Email := line[2]
-	Password := line[3]
-
-	buff := UserCsv{
+	User_ID, _ := uuid.NewUUID()
+	buff := schema.DBUser{
 		User_ID:  User_ID,
-		Name:     Name,
-		Email:    Email,
-		Password: Password,
+		Name:     line[1],
+		Email:    line[2],
+		Password: line[3],
 	}
 
-	insertUserIntoDb(buff)
-}
-
-func processUserMoviesRecord(line []string) {
-	if len(line) < 6 {
-		log.Println("Invalid length, discarding line...")
-		return
+	err := insertUserIntoDb(buff)
+	if err != nil {
+		log.Println("Error inserting user to db")
 	}
-
-	if line[0] == "user_id" {
-		// ignore first line
-		return
-	}
-
-	// note: error checking omitted for brevity
-	User_ID, _ := strconv.Atoi(line[0])
-	Movie_ID, _ := strconv.Atoi(line[1])
-	Username := line[2]
-	Movie_Title := line[3]
-	Director := line[4]
-	Release_Date, _ := strconv.Atoi(line[5])
-
-	buff := MovieByUserCsv{
-		User_ID:      User_ID,
-		Movie_ID:     Movie_ID,
-		Username:     Username,
-		Movie_Title:  Movie_Title,
-		Director:     Director,
-		Release_Date: Release_Date,
-	}
-
-	insertUserMoviesIntoDb(buff)
+	return err
 }
 
 // 3. Insert the values into the database
-func insertMovieIntoDb(record MovieCSV) {
+func insertMovieIntoDb(record schema.DBMovie) error {
 	counters.IncrementCounter("movies")
-	query_obj := config.SESSION.Query(`INSERT INTO app.movies
-	(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		record.Movie_ID,
-		record.Poster_Link,
-		record.Series_Title,
-		record.Released_Year,
-		record.Certificate,
-		record.Runtime,
-		record.Genre,
-		record.IMDB_Rating,
-		record.Overview,
-		record.Meta_score,
-		record.Director,
-		record.Star1,
-		record.Star2,
-		record.Star3,
-		record.Star4,
-		record.No_of_Votes,
-		record.Gross,
+	queryText := `INSERT INTO app.movies
+		(movie_id, poster_link, series_title, released_year,
+			certificate, runtime, genre, imdb_rating, overview,
+			meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query_obj := config.SESSION.Query(queryText,
+		record.Movie_ID, record.Poster_Link, record.Series_Title, record.Released_Year,
+		record.Certificate, record.Runtime, record.Genre, record.IMDB_Rating,
+		record.Overview, record.Meta_score, record.Director, record.Star1,
+		record.Star2, record.Star3, record.Star4, record.No_of_Votes, record.Gross,
 	)
 	err := query_obj.Exec()
 
 	if err != nil {
-		log.Printf("Insert failed: %s\n", err)
 		log.Println("Failed record: ", record)
 	}
+	return err
 }
 
-func insertUserIntoDb(record UserCsv) {
+func insertUserIntoDb(record schema.DBUser) error {
 	counters.IncrementCounter("users")
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(record.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println("Failed hashing pass")
+		return err
+	}
+
 	query_obj := config.SESSION.Query(`INSERT INTO app.users
 	(user_id, name, Email, Password)
 	VALUES (?, ?, ?, ?)`,
-		record.User_ID,
-		record.Name,
-		record.Email,
-		record.Password,
+		record.User_ID, record.Name, record.Email, hashedPassword,
 	)
-	err := query_obj.Exec()
+	err = query_obj.Exec()
 
 	if err != nil {
-		log.Printf("Insert failed: %s\n", err)
 		log.Println("Failed record: ", record)
 	}
+	return err
 }
 
-func insertUserMoviesIntoDb(record MovieByUserCsv) {
+func insertMoviesByUserIntoDb(record schema.DBMovieByUser) error {
 	query_obj := config.SESSION.Query(`INSERT INTO app.movies_by_user
-	(user_id, movie_id, username, movie_title, director, release_date)
-	VALUES (?, ?, ?, ?, ?, ?)`,
-		record.User_ID,
-		record.Movie_ID,
-		record.Username,
-		record.Movie_Title,
-		record.Director,
-		record.Release_Date,
+		(user_id, movie_id, watched, rewatched) VALUES (?, ?, ?, ?)`,
+		record.User_ID, record.Movie_ID,
+		record.Watched, record.Rewatched,
 	)
 	err := query_obj.Exec()
 
 	if err != nil {
-		log.Printf("Insert failed: %s\n", err)
 		log.Println("Failed record: ", record)
 	}
+	return err
 }

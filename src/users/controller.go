@@ -3,9 +3,9 @@ package users
 import (
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func createUserController(c *gin.Context) {
@@ -28,7 +28,7 @@ func createUserController(c *gin.Context) {
 
 func getUserByIDController(c *gin.Context) {
 	userIDText := c.Param("id")
-	userID, err := strconv.ParseInt(userIDText, 10, 64)
+	userID, err := uuid.Parse(userIDText)
 	if userIDText == "" || err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -97,13 +97,13 @@ func addMovieToUserController(c *gin.Context) {
 	movieIDParam := c.Param("movie_id")
 
 	// Convertir parámetros a int64
-	userID, err := strconv.ParseInt(userIDParam, 10, 64)
+	userID, err := uuid.Parse(userIDParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	movieID, err := strconv.ParseInt(movieIDParam, 10, 64)
+	movieID, err := uuid.Parse(movieIDParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID"})
 		return
@@ -122,7 +122,7 @@ func addMovieToUserController(c *gin.Context) {
 // Controlador para eliminar un usuario
 func deleteUserController(c *gin.Context) {
 	idParam := c.Param("id")
-	userID, err := strconv.ParseInt(idParam, 10, 64)
+	userID, err := uuid.Parse(idParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return

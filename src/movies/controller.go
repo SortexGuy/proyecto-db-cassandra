@@ -3,9 +3,9 @@ package movies
 import (
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func createMovieController(c *gin.Context) {
@@ -25,7 +25,7 @@ func createMovieController(c *gin.Context) {
 
 func getMovieByIDController(c *gin.Context) {
 	movieIDText := c.Param("id")
-	movieID, err := strconv.ParseInt(movieIDText, 0, 64)
+	movieID, err := uuid.Parse(movieIDText)
 	if movieIDText == "" || err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -79,7 +79,7 @@ func getAllMoviesController(c *gin.Context) {
 
 func getMovieWatchedByUserController(c *gin.Context) {
 	userIDText := c.Param("user_id")
-	userID, err := strconv.ParseInt(userIDText, 10, 64)
+	userID, err := uuid.Parse(userIDText)
 	if userIDText == "" || err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -102,7 +102,7 @@ func getMovieWatchedByUserController(c *gin.Context) {
 }
 
 func deleteMovieController(c *gin.Context) {
-	movieID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	movieID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID"})
 		return

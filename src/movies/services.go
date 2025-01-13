@@ -5,14 +5,15 @@ import (
 	"log"
 
 	. "github.com/SortexGuy/proyecto-db-cassandra/src/counters"
+	"github.com/google/uuid"
 )
 
 func createMovieService(movie MovieDTO) error {
-	id, err := IncrementCounter("movies")
+	_, err := IncrementCounter("movies")
 	if err != nil {
 		return err
 	}
-	movie.ID = id
+	// movie.ID = id
 
 	return createMovieRepository(movie)
 }
@@ -22,7 +23,7 @@ func GetAllMoviesService() ([]MovieDTO, error) {
 	return movies, err
 }
 
-func GetAllMoviesIDsService() ([]int64, error) {
+func GetAllMoviesIDsService() (uuid.UUIDs, error) {
 	movies, err := getAllMoviesIDRepository()
 
 	// Contabilizar cuántas películas se extrajeron
@@ -31,16 +32,16 @@ func GetAllMoviesIDsService() ([]int64, error) {
 	return movies, err
 }
 
-func getMovieByIDService(movieID int64) (MovieDTO, error) {
-	if movieID == 0 {
-		return MovieDTO{}, errors.New("movie ID is required")
-	}
+func getMovieByIDService(movieID uuid.UUID) (MovieDTO, error) {
+	// if movieID == 0 {
+	// 	return MovieDTO{}, errors.New("movie ID is required")
+	// }
 
 	return getMovieByIDRepository(movieID)
 }
 
 // GetMoviesByUser  obtiene todas las películas de un usuario específico
-func GetMoviesWatchedByUserService(userID int64) ([]MovieByUser, error) {
+func GetMoviesWatchedByUserService(userID uuid.UUID) ([]MovieByUser, error) {
 	moviesByUser, err := getMoviesByUserRepository(userID)
 	if err != nil {
 		log.Println("Error fetching movies by user:", err)
@@ -55,17 +56,17 @@ func GetMoviesWatchedByUserService(userID int64) ([]MovieByUser, error) {
 }
 
 func UpdateMovieService(movie MovieDTO) error {
-	if movie.ID == 0 {
-		return errors.New("movie ID is required")
-	}
+	// if movie.ID == 0 {
+	// 	return errors.New("movie ID is required")
+	// }
 
 	return UpdateMovieRepository(movie)
 }
 
-func DeleteMovieService(movieID int64) error {
-	if movieID == 0 {
-		return errors.New("movie ID is required")
-	}
+func DeleteMovieService(movieID uuid.UUID) error {
+	// if movieID == 0 {
+	// 	return errors.New("movie ID is required")
+	// }
 
 	return DeleteMovieRepository(movieID)
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
+	"github.com/google/uuid"
 )
 
 func createMovieRepository(movie MovieDTO) error {
@@ -15,6 +16,7 @@ func createMovieRepository(movie MovieDTO) error {
 		meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
+	movie.ID, _ = uuid.NewUUID()
 	err := session.Query(query,
 		movie.ID,
 		movie.Poster_Link,
@@ -64,15 +66,15 @@ func getAllMoviesRepository() ([]MovieDTO, error) {
 }
 
 // GetAllMovies obtiene todas las películas de la base de datos
-func getAllMoviesIDRepository() ([]int64, error) {
+func getAllMoviesIDRepository() (uuid.UUIDs, error) {
 	session := config.SESSION
-	var movies []int64
+	var movies uuid.UUIDs
 	query := "SELECT Movie_ID FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
 
-	var movie int64
+	var movie uuid.UUID
 	for iter.Scan(&movie) {
 		movies = append(movies, movie)
 	}
@@ -85,7 +87,7 @@ func getAllMoviesIDRepository() ([]int64, error) {
 	return movies, nil
 }
 
-func getMovieByIDRepository(movieID int64) (MovieDTO, error) {
+func getMovieByIDRepository(movieID uuid.UUID) (MovieDTO, error) {
 	session := config.SESSION
 	query := `SELECT * FROM movies WHERE movie_id = ?`
 	var movie MovieDTO
@@ -127,7 +129,7 @@ func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 }
 
 // GetAllMoviesByUser  obtiene todas las películas de un usuario específico
-func getMoviesByUserRepository(userID int64) ([]MovieByUser, error) {
+func getMoviesByUserRepository(userID uuid.UUID) ([]MovieByUser, error) {
 	session := config.SESSION
 	var moviesByUser []MovieByUser
 	query := "SELECT user_id, movie_id FROM movies_by_user WHERE user_id = ?"
@@ -173,7 +175,7 @@ func UpdateMovieRepository(movie MovieDTO) error {
 	return nil
 }
 
-func DeleteMovieRepository(movieID int64) error {
+func DeleteMovieRepository(movieID uuid.UUID) error {
 	session := config.SESSION
 	query := `DELETE FROM app.movies WHERE movie_id = ?`
 	err := session.Query(query, movieID).Exec()

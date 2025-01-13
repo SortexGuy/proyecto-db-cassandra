@@ -2,8 +2,12 @@ package users
 
 import (
 	"log"
+	"time"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/schema"
+	"github.com/gocql/gocql"
+	"github.com/google/uuid"
 )
 
 // Inserta un usuario en la tabla
@@ -11,6 +15,7 @@ func createUserRepository(user User) error {
 	session := config.SESSION
 
 	query := `INSERT INTO app.users (id, name, email, password) VALUES (?, ?, ?, ?)`
+	user.ID, _ = uuid.NewUUID()
 	err := session.Query(query, user.ID, user.Name, user.Email, user.Password).Exec()
 	if err != nil {
 		log.Println("Error inserting user:", err)
@@ -19,17 +24,36 @@ func createUserRepository(user User) error {
 	return nil
 }
 
-func addMovieToUserRepository(userID int64, movieID int64) error {
-	session := config.SESSION
-
-	query := `
-        INSERT INTO app.movies_by_user (user_id, movie_id)
-        VALUES (?, ?)
-    `
-	err := session.Query(query, userID, movieID).Exec()
-	if err != nil {
+func addMovieToUserRepository(userID, movieID uuid.UUID) error {
+	rel := schema.DBMovieByUser{}
+	// Primero se busca si ya existe la relacion entre usuario y pelicula
+	query := `SELECT user_id, movie_id, watched, rewatched FROM app.movies_by_user
+		WHERE user_id = ? AND movie_id = ?`
+	err := config.SESSION.Query(query, userID, movieID).Scan(
+		rel.User_ID, rel.Movie_ID, rel.Watched, rel.Rewatched)
+	if err != nil && err != gocql.ErrNotFound {
 		log.Println("Error adding movie to user:", err)
 		return err
+	}
+
+	if err == gocql.ErrNotFound {
+		// Si no existe se ingresa a la Base de datos
+		query = `INSERT INTO app.movies_by_user (user_id, movie_id, watched, rewatched)
+		VALUES (?, ?, ?, ?)`
+		err := config.SESSION.Query(query, userID, movieID, time.Now(), time.Now()).Exec()
+		if err != nil {
+			log.Println("Error adding movie to user:", err)
+			return err
+		}
+	} else {
+		// Si existe se actualiza solo el tiempo en el que se volvio a ver
+		query = `UPDATE app.movies_by_user SET rewatched = ?
+			WHERE user_id = ? AND movie_id = ?`
+		err := config.SESSION.Query(query, time.Now(), userID, movieID).Exec()
+		if err != nil {
+			log.Println("Error adding movie to user:", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -70,7 +94,7 @@ func updateUserRepository(user User) error {
 	return nil
 }
 
-func deleteUserRepository(userID int64) error {
+func deleteUserRepository(userID uuid.UUID) error {
 	session := config.SESSION
 
 	query := `DELETE FROM app.users WHERE id = ?`

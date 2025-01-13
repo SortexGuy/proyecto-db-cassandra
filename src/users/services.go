@@ -5,6 +5,7 @@ import (
 	"log"
 
 	. "github.com/SortexGuy/proyecto-db-cassandra/src/counters"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,11 +16,11 @@ func createUserService(user User) error {
 	}
 
 	user.Password = string(hashedPassword)
-	id, err := IncrementCounter("users")
+	IncrementCounter("users")
 	if err != nil {
 		return err
 	}
-	user.ID = id
+	// user.ID = id
 	err = createUserRepository(user)
 	if err != nil {
 		return err
@@ -28,14 +29,14 @@ func createUserService(user User) error {
 	return nil
 
 }
-func addMovieToUserService(userID int64, movieID int64) error {
+func addMovieToUserService(userID, movieID uuid.UUID) error {
 	// Validación básica
-	if userID == 0 {
-		return errors.New("user ID is required")
-	}
-	if movieID == 0 {
-		return errors.New("movie ID is required")
-	}
+	// if userID == 0 {
+	// 	return errors.New("user ID is required")
+	// }
+	// if movieID == 0 {
+	// 	return errors.New("movie ID is required")
+	// }
 
 	// Llamar al repositorio para agregar la película
 	err := addMovieToUserRepository(userID, movieID)
@@ -48,7 +49,7 @@ func addMovieToUserService(userID int64, movieID int64) error {
 }
 
 // GetUser ByIDService obtiene un usuario por su ID
-func getUserByIDService(id int64) (User, error) {
+func getUserByIDService(id uuid.UUID) (User, error) {
 	user := User{}
 	users, err := getAllUsersRepository()
 	if err != nil {
@@ -68,8 +69,8 @@ func getUserByIDService(id int64) (User, error) {
 	return user, errors.New("User Not Found") // Retorna 0 si no se encuentra el usuario
 }
 
-func GetAllUserIDsService() ([]int64, error) {
-	ids := []int64{}
+func GetAllUserIDsService() (uuid.UUIDs, error) {
+	ids := uuid.UUIDs{}
 	users, err := getAllUsersRepository()
 	if err != nil {
 		log.Println("Error getting users:", err)
@@ -103,9 +104,9 @@ func verifyEmailService(emailText string) (bool, error) {
 // Actualiza los datos de un usuario
 func updateUserService(user User) error {
 	// Validar datos del usuario
-	if user.ID == 0 {
-		return errors.New("user ID is required")
-	}
+	// if user.ID == 0 {
+	// 	return errors.New("user ID is required")
+	// }
 	if user.Name == "" || user.Email == "" || user.Password == "" {
 		return errors.New("name, email, and password are required")
 	}
@@ -121,11 +122,11 @@ func updateUserService(user User) error {
 }
 
 // Elimina un usuario por ID
-func deleteUserService(userID int64) error {
+func deleteUserService(userID uuid.UUID) error {
 	// Validar el ID del usuario
-	if userID == 0 {
-		return errors.New("user ID is required")
-	}
+	// if userID == 0 {
+	// 	return errors.New("user ID is required")
+	// }
 
 	// Llamar al repositorio para eliminar el usuario
 	err := deleteUserRepository(userID)
