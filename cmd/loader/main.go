@@ -141,7 +141,6 @@ func main() {
 	result = config.SESSION.Query(`CREATE TABLE app.recommendations (
 		user_id bigint,
 		movie_id bigint,
-		num_recommendations bigint,
 		PRIMARY KEY( user_id, movie_id )
 	);`)
 	err = result.Exec()
