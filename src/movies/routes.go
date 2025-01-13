@@ -9,7 +9,7 @@ func RegisterRoutes(router *gin.Engine) {
 	// CRUD básico
 	group.GET("/:id", getMovieByIDController)
 	group.POST("/", createMovieController)
-	group.PUT("/:id", updateMovieController)
+	group.PUT("/", updateMovieController)
 	group.DELETE("/:id", deleteMovieController)
 	group.GET("/", getAllMoviesController)
 
