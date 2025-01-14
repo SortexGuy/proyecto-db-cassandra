@@ -10,7 +10,7 @@ import (
 func createUserRepository(user User) error {
 	session := config.SESSION
 
-	query := `INSERT INTO app.users (id, name, email, password) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO app.users (user_id, name, email, password) VALUES (?, ?, ?, ?)`
 	err := session.Query(query, user.ID, user.Name, user.Email, user.Password).Exec()
 	if err != nil {
 		log.Println("Error inserting user:", err)
