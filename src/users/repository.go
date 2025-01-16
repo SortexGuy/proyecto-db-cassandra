@@ -2,6 +2,7 @@ package users
 
 import (
 	"log"
+	"time"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
 )
@@ -23,10 +24,10 @@ func addMovieToUserRepository(userID int64, movieID int64) error {
 	session := config.SESSION
 
 	query := `
-        INSERT INTO app.movies_by_user (user_id, movie_id)
-        VALUES (?, ?)
+        INSERT INTO app.movies_by_user (user_id, movie_id, watched)
+        VALUES (?, ?, ?)
     `
-	err := session.Query(query, userID, movieID).Exec()
+	err := session.Query(query, userID, movieID, time.Now()).Exec()
 	if err != nil {
 		log.Println("Error adding movie to user:", err)
 		return err

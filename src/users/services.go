@@ -106,9 +106,9 @@ func updateUserService(user User) error {
 	if user.ID == 0 {
 		return errors.New("user ID is required")
 	}
-	if user.Name == "" || user.Email == "" || user.Password == "" {
-		return errors.New("name, email, and password are required")
-	}
+	// if user.Name == "" || user.Email == "" || user.Password == "" {
+	// 	return errors.New("name, email, and password are required")
+	// }
 
 	// Llamar al repositorio para actualizar el usuario
 	err := updateUserRepository(user)

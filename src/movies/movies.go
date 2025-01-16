@@ -1,5 +1,7 @@
 package movies
 
+import "time"
+
 type MovieDTO struct {
 	ID            int64   `json:"id"`
 	Poster_Link   string  `json:"poster_link"`
@@ -22,8 +24,9 @@ type MovieDTO struct {
 
 // MovieByUser  representa la relación entre una película y un usuario
 type MovieByUser struct {
-	UserID  int64 `json:"user_id"`
-	MovieID int64 `json:"movie_id"`
+	UserID  int64     `json:"user_id"`
+	MovieID int64     `json:"movie_id"`
+	Watched time.Time `json:"watched"`
 }
 
 // Movie representa la estructura de una película

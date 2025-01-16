@@ -45,7 +45,7 @@ func createMovieRepository(movie MovieDTO) error {
 func getAllMoviesRepository() ([]MovieDTO, error) {
 	session := config.SESSION
 	var movies []MovieDTO
-	query := "SELECT Movie_ID FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
+	query := "SELECT movie_id FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
@@ -67,7 +67,7 @@ func getAllMoviesRepository() ([]MovieDTO, error) {
 func getAllMoviesIDRepository() ([]int64, error) {
 	session := config.SESSION
 	var movies []int64
-	query := "SELECT Movie_ID FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
+	query := "SELECT movie_id FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
@@ -108,13 +108,13 @@ func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 	session := config.SESSION
 	var moviesByUser []MovieByUser
 
-	query := "SELECT user_id, movie_id FROM movies_by_user"
+	query := "SELECT user_id, movie_id, watched FROM movies_by_user"
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
 
 	var movieByUser MovieByUser
-	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID) {
+	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID, &movieByUser.Watched) {
 		moviesByUser = append(moviesByUser, movieByUser)
 	}
 
@@ -130,14 +130,14 @@ func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 func getMoviesByUserRepository(userID int64) ([]MovieByUser, error) {
 	session := config.SESSION
 	var moviesByUser []MovieByUser
-	query := "SELECT user_id, movie_id FROM movies_by_user WHERE user_id = ?"
+	query := "SELECT user_id, movie_id, watched FROM movies_by_user WHERE user_id = ?"
 
 	// Ejecuta la consulta con el userID
 	iter := session.Query(query, userID).Iter()
 	defer iter.Close()
 
 	var movieByUser MovieByUser
-	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID) {
+	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID, &movieByUser.Watched) {
 		moviesByUser = append(moviesByUser, movieByUser)
 	}
 
