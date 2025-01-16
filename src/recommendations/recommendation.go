@@ -12,9 +12,8 @@ import (
 //"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
 
 type Recommendation struct {
-	UserID             int64   `json:"user_id"`
-	NumRecommendations int     `json:"num_recommendations"`
-	Movies             []int64 `json:"recommendations"`
+	UserID int64   `json:"user_id"`
+	Movies []int64 `json:"recommendations"`
 }
 
 // Nodo personalizado que implementa la interfaz graph.Node
@@ -95,7 +94,6 @@ func HybridRecommendation(g *simple.UndirectedGraph, initialUserID int64, steps 
 
 	// Asigna valores a los campos correctamente
 	recommendations.UserID = initialUserID
-	recommendations.NumRecommendations = num_recommendations
 	recommendations.Movies = sortMapDescending(hybridScores, num_recommendations)
 
 	return recommendations

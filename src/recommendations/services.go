@@ -1,6 +1,7 @@
 package recommendations
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
@@ -38,6 +39,26 @@ func makeRecommendationService(userID int64, lambda float64) (Recommendation, er
 		return recomendation, err
 	}
 	return recomendation, nil
+}
 
-	//return AddRecommendationRepository(userID, movieID)
+func getRecommendationService(userID int64) ([]movies.MovieDTO, error) {
+	var m []movies.MovieDTO
+	recommendation, err := getRecommendationRepository(userID)
+	if err != nil {
+		return m, fmt.Errorf("error getting recommendations: %w", err)
+	}
+
+	for _, movieID := range recommendation.Movies {
+		movie, err := movies.GetMovieByIDService(movieID) // Llama a la función getMovieByIDService
+		if err != nil {
+			// Manejo de errores al obtener la película.  Puedes registrar el error,
+			// devolver un error, o simplemente continuar con la siguiente película.
+			// Aquí se opta por continuar con la siguiente película.
+			fmt.Printf("Error getting movie %d: %v\n", movieID, err)
+			continue
+		}
+		m = append(m, movie)
+	}
+
+	return m, nil
 }

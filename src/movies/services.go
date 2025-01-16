@@ -31,7 +31,7 @@ func GetAllMoviesIDsService() ([]int64, error) {
 	return movies, err
 }
 
-func getMovieByIDService(movieID int64) (MovieDTO, error) {
+func GetMovieByIDService(movieID int64) (MovieDTO, error) {
 	if movieID == 0 {
 		return MovieDTO{}, errors.New("movie ID is required")
 	}

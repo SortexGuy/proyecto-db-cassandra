@@ -1,6 +1,7 @@
 package recommendations
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
@@ -45,4 +46,29 @@ func makeRecommendationRepository(recomendation Recommendation) error {
 	}
 
 	return nil
+}
+
+func getRecommendationRepository(id int64) (Recommendation, error) {
+	session := config.SESSION
+	var recommendation Recommendation
+	recommendation.UserID = id
+	recommendation.Movies = make([]int64, 0)
+
+	iter := session.Query("SELECT movie_id FROM recommendations WHERE user_id = ?", id).Iter()
+	defer iter.Close()
+
+	var movieID int64
+	for iter.Scan(&movieID) {
+		recommendation.Movies = append(recommendation.Movies, movieID)
+	}
+
+	if err := iter.Close(); err != nil {
+		return Recommendation{}, err // Devuelve un Recommendation vacío en caso de error
+	}
+
+	if len(recommendation.Movies) == 0 {
+		return Recommendation{}, fmt.Errorf("no recommendations found for user %d", id) // Error específico si no hay recomendaciones
+	}
+
+	return recommendation, nil
 }

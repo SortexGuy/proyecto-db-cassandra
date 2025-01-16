@@ -34,7 +34,7 @@ func getMovieByIDController(c *gin.Context) {
 		return
 	}
 
-	movie, err := getMovieByIDService(movieID)
+	movie, err := GetMovieByIDService(movieID)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
