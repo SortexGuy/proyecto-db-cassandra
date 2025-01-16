@@ -10,6 +10,7 @@ import (
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/counters"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type MovieCSV struct {
@@ -325,13 +326,13 @@ func processUserRecord(line []string) {
 	User_ID, _ := strconv.Atoi(line[0])
 	Name := line[1]
 	Email := line[2]
-	Password := line[3]
+	Password, _ := bcrypt.GenerateFromPassword([]byte(line[3]), bcrypt.DefaultCost)
 
 	buff := UserCsv{
 		User_ID:  User_ID,
 		Name:     Name,
 		Email:    Email,
-		Password: Password,
+		Password: string(Password),
 	}
 
 	insertUserIntoDb(buff)

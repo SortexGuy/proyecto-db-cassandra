@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,15 +14,14 @@ func loginUserController(c *gin.Context) {
 		return
 	}
 
-	//token, err := loginService(loginDTO.Username, loginDTO.Password)
-	token, err := loginService(loginDTO)
+	user, err := loginService(loginDTO)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
+		"data": []users.User{user},
 	})
 }
 
@@ -33,13 +33,13 @@ func registerUserController(c *gin.Context) {
 		return
 	}
 
-	token, err := registrationService(registrationDTO)
+	user, err := registrationService(registrationDTO)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
+		"data": []users.User{user},
 	})
 }

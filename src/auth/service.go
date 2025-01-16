@@ -1,65 +1,34 @@
 package auth
 
 import (
-	"os"
-	"time"
-
-	"github.com/dgrijalva/jwt-go"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/counters"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
+	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtKey = []byte(os.Getenv("SECRET_KEY"))
-var fallback = []byte("tu_clave_secreta")
+func loginService(loginData LoginDTO) (users.User, error) {
+	user, err := loginRepository(loginData)
 
-func loginService(loginData LoginDTO) (string, error) {
-	_, err := loginRepository(loginData)
-	if err != nil {
-		return "", err
-	}
-
-	if jwtKey == nil {
-		jwtKey = fallback
-	}
-
-	expirationTime := time.Now().Add(24 * time.Hour) // 24h
-	var claims = Claims{
-		Username: loginData.Username,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
+	return user, err
 }
 
-func registrationService(registrationData RegistrationDTO) (string, error) {
-	_, err := registrationRepository(registrationData)
+func registrationService(registrationData RegistrationDTO) (users.User, error) {
+	user := users.User{}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(registrationData.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return user, err
 	}
-
-	if jwtKey == nil {
-		jwtKey = fallback
-	}
-
-	expirationTime := time.Now().Add(24 * time.Hour) // 24h
-	var claims = Claims{
-		Username: registrationData.Username,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	id, err := counters.IncrementCounter("users")
 	if err != nil {
-		return "", err
+		return user, err
+	}
+	user.ID = id
+	user.Password = string(hashedPassword)
+
+	user, err = registrationRepository(user)
+	if err != nil {
+		return users.User{}, err
 	}
 
-	return tokenString, nil
+	return user, nil
 }

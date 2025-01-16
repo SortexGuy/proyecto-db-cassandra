@@ -1,28 +1,61 @@
 package auth
 
-// import (
-// 	"errors"
-//
-// 	"github.com/SortexGuy/proyecto-db-cassandra/config"
-// )
+import (
+	"errors"
+	"log"
+	"strings"
 
-func loginRepository(loginData LoginDTO) (LoginDTO, error) {
-	// db := config.SESSION
-	//
-	// // Busca al usuario por el username
-	// if err := db.Where("username = ?", loginData.username).First(&user).Error; err != nil {
-	// 	return nil, errors.New("invalid credentials")
-	// }
-	//
-	// // Verifica el password usando bcrypt
-	// if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-	// 	return nil, errors.New("invalid credentials")
-	// }
+	"github.com/SortexGuy/proyecto-db-cassandra/config"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
+	"github.com/gocql/gocql"
+	"golang.org/x/crypto/bcrypt"
+)
 
-	return loginData, nil
+func loginRepository(loginData LoginDTO) (users.User, error) {
+	session := config.SESSION
+	user := users.User{}
+
+	// Busca al usuario por el username
+	query := `SELECT user_id, name, password FROM users WHERE name = ?;`
+	err := session.Query(query, loginData.Username).Scan(&user.ID, &user.Name, &user.Password)
+	if err != nil {
+		log.Println("Invalid username")
+		return user, err
+	}
+
+	// Verifica el password usando bcrypt
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
+		log.Println("Invalid password")
+		return users.User{}, errors.New("invalid credentials")
+	}
+
+	return user, nil
 }
 
-func registrationRepository(registrationData RegistrationDTO) (RegistrationDTO, error) {
+func registrationRepository(registrationData users.User) (users.User, error) {
+	session := config.SESSION
+	user := users.User{}
 
-	return registrationData, nil
+	query := `SELECT user_id, name, email FROM users`
+	iter := session.Query(query).Iter()
+	for iter.Scan(&user.ID, &user.Name, &user.Email) {
+		registrationData.Email = strings.ToLower(registrationData.Email)
+		if user.Email == registrationData.Email || user.Name == registrationData.Name {
+			log.Println("name or email already exist")
+			return users.User{}, errors.New("name or email already exist")
+		}
+	}
+	if err := iter.Close(); err != nil && err != gocql.ErrNotFound {
+		log.Println("Unexpected error")
+		return user, err
+	}
+
+	user = registrationData
+	query = `INSERT INTO app.users (user_id, name, email, password) VALUES (?, ?, ?, ?)`
+	err := session.Query(query, user.ID, user.Name, user.Email, user.Password).Exec()
+	if err != nil {
+		log.Println("Error inserting user:", err)
+		return users.User{}, err
+	}
+	return user, nil
 }
