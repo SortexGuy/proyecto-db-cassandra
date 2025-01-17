@@ -136,3 +136,15 @@ func deleteUserController(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
+
+func getAllUsers(c *gin.Context) {
+	users, err := getAllUsersService()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch users"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": users,
+	})
+}

@@ -13,4 +13,5 @@ func RegisterRoutes(router *gin.Engine) {
 	group.PUT("/:id/watched/:movie_id", addMovieToUserController)
 	group.PUT("/", updateUserController)
 	group.DELETE("/:id", deleteUserController)
+	group.GET("/", getAllUsers)
 }

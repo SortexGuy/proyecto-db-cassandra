@@ -136,3 +136,12 @@ func deleteUserService(userID int64) error {
 
 	return nil
 }
+
+func getAllUsersService() ([]User, error) {
+	users, err := getAllUsersRepository()
+	if err != nil {
+		log.Println("Error getting users:", err)
+		return nil, err
+	}
+	return users, nil
+}
