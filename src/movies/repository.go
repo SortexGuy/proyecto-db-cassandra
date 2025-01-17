@@ -2,6 +2,7 @@ package movies
 
 import (
 	"log"
+	"time"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
 )
@@ -58,23 +59,23 @@ func GetAllMoviesRepository() ([]MovieDTO, error) {
 
 	// Variables temporales para escanear los datos
 	var (
-		id            int64
-		posterLink    string
-		seriesTitle   string
-		releasedYear  int
-		certificate   string
-		runtime       string
-		genre         string
-		imdbRating    float64
-		overview      string
-		metaScore     int
-		director      string
-		star1         string
-		star2         string
-		star3         string
-		star4         string
-		noVotes       int
-		gross         string
+		id           int64
+		posterLink   string
+		seriesTitle  string
+		releasedYear int
+		certificate  string
+		runtime      string
+		genre        string
+		imdbRating   float64
+		overview     string
+		metaScore    int
+		director     string
+		star1        string
+		star2        string
+		star3        string
+		star4        string
+		noVotes      int
+		gross        string
 	)
 
 	// Iterar sobre los resultados y asignar a MovieDTO
@@ -113,7 +114,6 @@ func GetAllMoviesRepository() ([]MovieDTO, error) {
 
 	return movies, nil
 }
-
 
 // GetAllMovies obtiene todas las películas de la base de datos
 func getAllMoviesIDRepository() ([]int64, error) {
@@ -165,8 +165,10 @@ func GetAllMoviesByUserRepository() ([]MovieByUser, error) {
 	iter := session.Query(query).Iter()
 	defer iter.Close()
 
+	var watched string
 	var movieByUser MovieByUser
-	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID, &movieByUser.Watched) {
+	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID, &watched) {
+		movieByUser.Watched, _ = time.Parse(time.Layout, watched)
 		moviesByUser = append(moviesByUser, movieByUser)
 	}
 
@@ -188,8 +190,10 @@ func getMoviesByUserRepository(userID int64) ([]MovieByUser, error) {
 	iter := session.Query(query, userID).Iter()
 	defer iter.Close()
 
+	var watched string
 	var movieByUser MovieByUser
-	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID, &movieByUser.Watched) {
+	for iter.Scan(&movieByUser.UserID, &movieByUser.MovieID, &watched) {
+		movieByUser.Watched, _ = time.Parse(time.Layout, watched)
 		moviesByUser = append(moviesByUser, movieByUser)
 	}
 

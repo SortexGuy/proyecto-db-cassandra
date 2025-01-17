@@ -31,7 +31,7 @@ type MovieCSV struct {
 	Star2         string
 	Star3         string
 	Star4         string
-	No_Votes   	  int
+	No_Votes      int
 	Gross         string
 }
 
@@ -102,7 +102,7 @@ func main() {
 		`CREATE TABLE IF NOT EXISTS app.movies_by_user (
 			user_id bigint,
 			movie_id bigint,
-			watched timestamp,
+			watched string,
 			PRIMARY KEY( (user_id), watched, movie_id )
 		);`,
 		// Crear tabla para contar los identificadores de varias tablas
@@ -211,7 +211,7 @@ func processMovieRecord(line []string) {
 		Star2:         line[12],
 		Star3:         line[13],
 		Star4:         line[14],
-		No_Votes:       No_Votes,
+		No_Votes:      No_Votes,
 		Gross:         line[16],
 	}
 
@@ -327,7 +327,7 @@ func insertUserMoviesIntoDb(record MovieByUserCsv) {
 	VALUES (?, ?, ?, ?, ?, ?)`,
 		record.User_ID,
 		record.Movie_ID,
-		record.Watched,
+		record.Watched.Format(time.Layout),
 	)
 	err := query_obj.Exec()
 

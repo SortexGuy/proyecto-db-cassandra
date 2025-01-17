@@ -27,7 +27,7 @@ func addMovieToUserRepository(userID int64, movieID int64) error {
         INSERT INTO app.movies_by_user (user_id, movie_id, watched)
         VALUES (?, ?, ?)
     `
-	err := session.Query(query, userID, movieID, time.Now()).Exec()
+	err := session.Query(query, userID, movieID, time.Now().Format(time.Layout)).Exec()
 	if err != nil {
 		log.Println("Error adding movie to user:", err)
 		return err
