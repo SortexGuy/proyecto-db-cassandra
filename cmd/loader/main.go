@@ -31,7 +31,7 @@ type MovieCSV struct {
 	Star2         string
 	Star3         string
 	Star4         string
-	No_of_Votes   int
+	No_Votes   int
 	Gross         string
 }
 
@@ -85,7 +85,7 @@ func main() {
 			star2 text,
 			star3 text,
 			star4 text,
-			no_of_votes int,
+			no_Votes int,
 			gross text,
 			PRIMARY KEY( (movie_id), genre, series_title )
 		);`,
@@ -211,7 +211,7 @@ func processMovieRecord(line []string) {
 		Star2:         line[12],
 		Star3:         line[13],
 		Star4:         line[14],
-		No_of_Votes:   No_of_Votes,
+		No_Votes:   No_of_Votes,
 		Gross:         line[16],
 	}
 
@@ -293,7 +293,7 @@ func insertMovieIntoDb(record MovieCSV) {
 		record.Star2,
 		record.Star3,
 		record.Star4,
-		record.No_of_Votes,
+		record.No_Votes,
 		record.Gross,
 	)
 	err := query_obj.Exec()
