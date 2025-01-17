@@ -32,9 +32,9 @@ func GetAllMoviesIDsService() ([]int64, error) {
 }
 
 func GetMovieByIDService(movieID int64) (MovieDTO, error) {
-	if movieID == 0 {
-		return MovieDTO{}, errors.New("movie ID is required")
-	}
+	// if movieID == 0 {
+	// 	return MovieDTO{}, errors.New("movie ID is required")
+	// }
 
 	return getMovieByIDRepository(movieID)
 }

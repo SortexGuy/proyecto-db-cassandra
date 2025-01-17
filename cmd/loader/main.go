@@ -112,8 +112,9 @@ func main() {
 		);`,
 		// Crear tabla para guardar las recomendaciones
 		`CREATE TABLE IF NOT EXISTS app.recommendations (
-			user_id bigint PRIMARY KEY,
-			movie_id bigint
+			user_id bigint,
+			movie_id bigint,
+			PRIMARY KEY( (user_id), movie_id )
 		);`,
 	}
 

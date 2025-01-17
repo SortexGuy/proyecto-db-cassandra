@@ -35,7 +35,7 @@ func makeRecommendationController(c *gin.Context) {
 }
 
 func getRecommendationController(c *gin.Context) {
-	userIDStr := c.Query("user_id")
+	userIDStr := c.Param("user_id")
 	// Validar parámetros
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
@@ -47,9 +47,10 @@ func getRecommendationController(c *gin.Context) {
 	// Llamar al servicio
 	r, err := getRecommendationService(userID)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed getting data"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": r})
 
+	c.JSON(http.StatusOK, gin.H{"data": r})
 }
