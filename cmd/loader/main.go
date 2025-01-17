@@ -97,6 +97,8 @@ func main() {
 			password text,
 			PRIMARY KEY( (user_id), name, email )
 		);`,
+		// Crear indice por nombre de usuario
+		`CREATE INDEX IF NOT EXISTS username ON app.users ( name )`,
 		// Crear tabla de peliculas por usuario
 		// los id deben ser bigint
 		`CREATE TABLE IF NOT EXISTS app.movies_by_user (

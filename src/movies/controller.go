@@ -73,7 +73,7 @@ func getAllMoviesController(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": movies[:20],
+		"data": movies,
 	})
 }
 

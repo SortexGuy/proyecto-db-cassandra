@@ -16,10 +16,10 @@ func loginRepository(loginData LoginDTO) (users.User, error) {
 	user := users.User{}
 
 	// Busca al usuario por el username
-	query := `SELECT user_id, name, password FROM app.users WHERE name = ?;`
-	err := session.Query(query, loginData.Username).Scan(&user.ID, &user.Name, &user.Password)
+	query := `SELECT user_id, email, name, password FROM app.users WHERE name = ?;`
+	err := session.Query(query, loginData.Username).Scan(&user.ID, &user.Email, &user.Name, &user.Password)
 	if err != nil {
-		log.Println("Invalid username")
+		log.Println("Invalid username: ", err)
 		return user, err
 	}
 
@@ -29,6 +29,7 @@ func loginRepository(loginData LoginDTO) (users.User, error) {
 		return users.User{}, errors.New("invalid credentials")
 	}
 
+	user.Password = ""
 	return user, nil
 }
 
@@ -46,7 +47,7 @@ func registrationRepository(registrationData users.User) (users.User, error) {
 		}
 	}
 	if err := iter.Close(); err != nil && err != gocql.ErrNotFound {
-		log.Println("Unexpected error")
+		log.Println("Unexpected error: ", err)
 		return user, err
 	}
 
@@ -57,5 +58,6 @@ func registrationRepository(registrationData users.User) (users.User, error) {
 		log.Println("Error inserting user:", err)
 		return users.User{}, err
 	}
+
 	return user, nil
 }

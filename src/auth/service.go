@@ -23,6 +23,8 @@ func registrationService(registrationData RegistrationDTO) (users.User, error) {
 		return user, err
 	}
 	user.ID = id
+	user.Name = registrationData.Username
+	user.Email = registrationData.Email
 	user.Password = string(hashedPassword)
 
 	user, err = registrationRepository(user)
