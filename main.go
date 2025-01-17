@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/SortexGuy/proyecto-db-cassandra/config"
+	"github.com/SortexGuy/proyecto-db-cassandra/src/auth"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/movies"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/recommendations"
 	"github.com/SortexGuy/proyecto-db-cassandra/src/users"
@@ -36,6 +37,7 @@ func main() {
 			"message": "pong",
 		})
 	})
+	auth.RegisterRoutes(r)
 	movies.RegisterRoutes(r)
 	users.RegisterRoutes(r)
 	recommendations.RegisterRoutes(r)
