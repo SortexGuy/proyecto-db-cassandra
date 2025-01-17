@@ -39,7 +39,7 @@ func addMovieToUserRepository(userID int64, movieID int64) error {
 func getAllUsersRepository() ([]User, error) {
 	session := config.SESSION // Asegúrate de que config.SESSION esté correctamente inicializado
 	var users []User
-	query := "SELECT user_id, name, email FROM users"
+	query := "SELECT user_id, name, email FROM app.users"
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
@@ -62,7 +62,7 @@ func getAllUsersRepository() ([]User, error) {
 func updateUserRepository(user User) error {
 	session := config.SESSION
 
-	query := `UPDATE app.users SET name = ?, email = ?, password = ? WHERE id = ?`
+	query := `UPDATE app.users SET name = ?, email = ?, password = ? WHERE user_id = ?`
 	err := session.Query(query, user.Name, user.Email, user.Password, user.ID).Exec()
 	if err != nil {
 		log.Println("Error updating user:", err)
@@ -74,7 +74,7 @@ func updateUserRepository(user User) error {
 func deleteUserRepository(userID int64) error {
 	session := config.SESSION
 
-	query := `DELETE FROM app.users WHERE id = ?`
+	query := `DELETE FROM app.users WHERE user_id = ?`
 	err := session.Query(query, userID).Exec()
 	if err != nil {
 		log.Println("Error deleting user:", err)
