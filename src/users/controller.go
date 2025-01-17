@@ -91,7 +91,7 @@ func updateUserController(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 }
 
-func addMovieToUserController(c *gin.Context) {
+/*func addMovieToUserController(c *gin.Context) {
 	// Extraer userID y movieID de los parámetros
 	userIDParam := c.Param("id")
 	movieIDParam := c.Param("movie_id")
@@ -117,7 +117,7 @@ func addMovieToUserController(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Movie marked as watched successfully"})
-}
+}*/
 
 // Controlador para eliminar un usuario
 func deleteUserController(c *gin.Context) {
@@ -147,4 +147,29 @@ func getAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": users,
 	})
+}
+
+func addMovieToUserController(c *gin.Context) {
+	userIDParam := c.Param("id")
+	userID, err := strconv.ParseInt(userIDParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	movieIDs := make([]int64, 0)
+	if err := c.ShouldBindJSON(&movieIDs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	for _, movieID := range movieIDs {
+		err = addMovieToUserService(userID, movieID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return // O puedes continuar con las demás películas
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Movies marked as watched successfully"})
 }
