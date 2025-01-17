@@ -31,7 +31,7 @@ type MovieCSV struct {
 	Star2         string
 	Star3         string
 	Star4         string
-	No_Votes   int
+	No_Votes   	  int
 	Gross         string
 }
 
@@ -193,7 +193,7 @@ func processMovieRecord(line []string) {
 	Released_Year, _ := strconv.Atoi(line[3])
 	IMDB_Rating, _ := strconv.ParseFloat(line[7], 64)
 	Meta_score, _ := strconv.Atoi(line[9])
-	No_of_Votes, _ := strconv.Atoi(line[15])
+	No_Votes, _ := strconv.Atoi(line[15])
 
 	buf := MovieCSV{
 		Movie_ID:      Movie_ID,
@@ -211,7 +211,7 @@ func processMovieRecord(line []string) {
 		Star2:         line[12],
 		Star3:         line[13],
 		Star4:         line[14],
-		No_Votes:   No_of_Votes,
+		No_Votes:       No_Votes,
 		Gross:         line[16],
 	}
 
@@ -276,7 +276,7 @@ func processUserMoviesRecord(line []string) {
 // 3. Insert the values into the database
 func insertMovieIntoDb(record MovieCSV) {
 	query_obj := config.SESSION.Query(`INSERT INTO app.movies
-	(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
+	(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_Votes, gross)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		record.Movie_ID,
 		record.Poster_Link,
