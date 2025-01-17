@@ -18,7 +18,7 @@ func createMovieService(movie MovieDTO) error {
 }
 
 func GetAllMoviesService() ([]MovieDTO, error) {
-	movies, err := getAllMoviesRepository()
+	movies, err := GetAllMoviesRepository()
 	return movies, err
 }
 

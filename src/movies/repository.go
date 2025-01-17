@@ -12,7 +12,7 @@ func createMovieRepository(movie MovieDTO) error {
 		INSERT INTO app.movies
 		(movie_id, poster_link, series_title, released_year, certificate,
 		runtime, genre, imdb_rating, overview, 
-		meta_score, director, star1, star2, star3, star4, no_of_votes, gross)
+		meta_score, director, star1, star2, star3, star4, no_Votes, gross)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	err := session.Query(query,
@@ -42,7 +42,7 @@ func createMovieRepository(movie MovieDTO) error {
 	return nil
 }
 
-func getAllMoviesRepository() ([]MovieDTO, error) {
+func GetAllMoviesRepository() ([]MovieDTO, error) {
 	session := config.SESSION
 	var movies []MovieDTO
 
@@ -50,7 +50,7 @@ func getAllMoviesRepository() ([]MovieDTO, error) {
 	query := `SELECT 
 		movie_id, poster_link, series_title, released_year, certificate, 
 		runtime, genre, imdb_rating, overview, meta_score, director, 
-		star1, star2, star3, star4, no_votes, gross 
+		star1, star2, star3, star4, no_Votes, gross 
 		FROM app.movies`
 
 	iter := session.Query(query).Iter()
