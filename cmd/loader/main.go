@@ -85,7 +85,7 @@ func main() {
 			star2 text,
 			star3 text,
 			star4 text,
-			no_of_votes int,
+			no_Votes int,
 			gross text,
 			PRIMARY KEY( (movie_id), genre, series_title )
 		);`,
