@@ -26,7 +26,7 @@ func makeRecommendationRepository(recomendation Recommendation) error {
 			}
 		}
 		updateQuery := `UPDATE recommendations SET movie_id = ? WHERE user_id = ?`
-		err := session.Query(updateQuery, movies, userID).Exec()
+		err := session.Query(updateQuery, movie, userID).Exec()
 		if err != nil {
 			log.Println("Error updating recommendations:", err)
 			return err
