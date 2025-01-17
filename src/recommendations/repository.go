@@ -16,7 +16,7 @@ func makeRecommendationRepository(recomendation Recommendation) error {
 
 	query := `SELECT movie_id FROM recommendations WHERE user_id = ?`
 	iter := session.Query(query, userID).Iter()
-	movie := movies[0]
+	var movie int64
 	if iter.Scan(&movie) {
 		for i, v := range movies {
 			if v == movie {
