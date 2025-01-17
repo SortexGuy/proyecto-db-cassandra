@@ -45,16 +45,67 @@ func createMovieRepository(movie MovieDTO) error {
 func getAllMoviesRepository() ([]MovieDTO, error) {
 	session := config.SESSION
 	var movies []MovieDTO
-	query := "SELECT movie_id FROM app.movies" // Asegúrate de que este sea el nombre correcto de tu tabla
+
+	// Consulta completa con todos los campos de MovieDTO
+	query := `SELECT 
+		movie_id, poster_link, series_title, released_year, certificate, 
+		runtime, genre, imdb_rating, overview, meta_score, director, 
+		star1, star2, star3, star4, no_votes, gross 
+		FROM app.movies`
 
 	iter := session.Query(query).Iter()
 	defer iter.Close()
 
-	var movie MovieDTO
-	for iter.Scan(&movie) {
+	// Variables temporales para escanear los datos
+	var (
+		id            int64
+		posterLink    string
+		seriesTitle   string
+		releasedYear  int
+		certificate   string
+		runtime       string
+		genre         string
+		imdbRating    float64
+		overview      string
+		metaScore     int
+		director      string
+		star1         string
+		star2         string
+		star3         string
+		star4         string
+		noVotes       int
+		gross         string
+	)
+
+	// Iterar sobre los resultados y asignar a MovieDTO
+	for iter.Scan(
+		&id, &posterLink, &seriesTitle, &releasedYear, &certificate,
+		&runtime, &genre, &imdbRating, &overview, &metaScore, &director,
+		&star1, &star2, &star3, &star4, &noVotes, &gross,
+	) {
+		movie := MovieDTO{
+			ID:            id,
+			Poster_Link:   posterLink,
+			Series_Title:  seriesTitle,
+			Released_Year: releasedYear,
+			Certificate:   certificate,
+			Runtime:       runtime,
+			Genre:         genre,
+			IMDB_Rating:   imdbRating,
+			Overview:      overview,
+			Meta_score:    metaScore,
+			Director:      director,
+			Star1:         star1,
+			Star2:         star2,
+			Star3:         star3,
+			Star4:         star4,
+			No_Votes:      noVotes,
+			Gross:         gross,
+		}
 		movies = append(movies, movie)
 	}
 
+	// Verificar errores al cerrar el iterador
 	if err := iter.Close(); err != nil {
 		log.Println("Error closing iterator:", err)
 		return nil, err
@@ -62,6 +113,7 @@ func getAllMoviesRepository() ([]MovieDTO, error) {
 
 	return movies, nil
 }
+
 
 // GetAllMovies obtiene todas las películas de la base de datos
 func getAllMoviesIDRepository() ([]int64, error) {
