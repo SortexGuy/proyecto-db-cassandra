@@ -16,7 +16,7 @@ func loginRepository(loginData LoginDTO) (users.User, error) {
 	user := users.User{}
 
 	// Busca al usuario por el username
-	query := `SELECT user_id, name, password FROM users WHERE name = ?;`
+	query := `SELECT user_id, name, password FROM app.users WHERE name = ?;`
 	err := session.Query(query, loginData.Username).Scan(&user.ID, &user.Name, &user.Password)
 	if err != nil {
 		log.Println("Invalid username")
@@ -36,7 +36,7 @@ func registrationRepository(registrationData users.User) (users.User, error) {
 	session := config.SESSION
 	user := users.User{}
 
-	query := `SELECT user_id, name, email FROM users`
+	query := `SELECT user_id, name, email FROM app.users`
 	iter := session.Query(query).Iter()
 	for iter.Scan(&user.ID, &user.Name, &user.Email) {
 		registrationData.Email = strings.ToLower(registrationData.Email)
