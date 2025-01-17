@@ -102,7 +102,7 @@ func main() {
 		`CREATE TABLE IF NOT EXISTS app.movies_by_user (
 			user_id bigint,
 			movie_id bigint,
-			watched string,
+			watched text,
 			PRIMARY KEY( (user_id), watched, movie_id )
 		);`,
 		// Crear tabla para contar los identificadores de varias tablas
@@ -225,7 +225,6 @@ func processUserRecord(line []string) {
 		log.Println("Invalid length, discarding line...")
 		return
 	}
-
 	if line[0] == "ID" {
 		// ignore first line
 		return
@@ -253,7 +252,6 @@ func processUserMoviesRecord(line []string) {
 		log.Println("Invalid length, discarding line...")
 		return
 	}
-
 	if line[0] == "user_id" {
 		// ignore first line
 		return
@@ -276,7 +274,7 @@ func processUserMoviesRecord(line []string) {
 // 3. Insert the values into the database
 func insertMovieIntoDb(record MovieCSV) {
 	query_obj := config.SESSION.Query(`INSERT INTO app.movies
-	(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_Votes, gross)
+	(movie_id, poster_link, series_title, released_year, certificate, runtime, genre, imdb_rating, overview, meta_score, director, star1, star2, star3, star4, no_votes, gross)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		record.Movie_ID,
 		record.Poster_Link,
@@ -306,7 +304,7 @@ func insertMovieIntoDb(record MovieCSV) {
 
 func insertUserIntoDb(record UserCsv) {
 	query_obj := config.SESSION.Query(`INSERT INTO app.users
-	(user_id, name, Email, Password)
+	(user_id, name, email, password)
 	VALUES (?, ?, ?, ?)`,
 		record.User_ID,
 		record.Name,
@@ -323,8 +321,8 @@ func insertUserIntoDb(record UserCsv) {
 
 func insertUserMoviesIntoDb(record MovieByUserCsv) {
 	query_obj := config.SESSION.Query(`INSERT INTO app.movies_by_user
-	(user_id, movie_id, username, movie_title, director, release_date)
-	VALUES (?, ?, ?, ?, ?, ?)`,
+	(user_id, movie_id, watched)
+	VALUES (?, ?, ?)`,
 		record.User_ID,
 		record.Movie_ID,
 		record.Watched.Format(time.Layout),
